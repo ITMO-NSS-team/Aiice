@@ -8,8 +8,8 @@ import torch.optim as optim
 from tqdm import tqdm
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 import matplotlib.pyplot as plt
-from visualize.visualize import Visualizer
-from logger.logger import Loggger
+from baseline_model.visualize.visualize import Visualizer
+from baseline_model.logger.logger import Loggger
 import logging
 
 logging.basicConfig(level=logging.INFO) 

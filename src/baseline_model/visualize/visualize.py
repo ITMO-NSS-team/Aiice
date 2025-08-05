@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from logger.logger import Loggger
+from baseline_model.logger.logger import Loggger
 import seaborn as sns
 
 class Visualizer:

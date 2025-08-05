@@ -1,0 +1,27 @@
+[project]
+name = "aiice"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Maxim Malahovsky", email = "maximmalahovsky14@gmail.com"},
+]
+dependencies = ["numpy>=2.2.6", "tqdm>=4.67.1", "torchmetrics>=1.8.0", "matplotlib>=3.10.5", "pandas>=2.3.1", "seaborn>=0.13.2", "torchcnnbuilder>=0.1.4", "torch>=2.6.0"]
+requires-python = ">=3.10,<=3.13"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.build]
+source-includes = ['.']
+
+[tool.pdm]
+package-dir = "src"
+
+[tool.pdm.dev-dependencies]
+dev = ["ipython>=8.30.0", "ptpython>=3.0.29"]
+
+
