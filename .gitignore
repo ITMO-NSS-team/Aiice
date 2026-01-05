@@ -1,0 +1,16 @@
+# cache files
+**/__pycache__/
+**/.pytest_cache
+**/DS_Store
+**/.ipynb_checkpoints
+
+# idea files
+**/.idea
+**/.vscode
+
+# local files
+.local
+.coverage
+
+# uv venv
+.venv
