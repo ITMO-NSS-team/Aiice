@@ -2,14 +2,17 @@ from datetime import date
 
 # hugging face constants
 
-_HF_BASE_URL: str = "https://huggingface.co"
-_HF_REPO_TYPE: str = "dataset"
-_HF_DATASET_REPO: str = "ITMO-NSS/Aiice"
-_HF_API_READ_TIMEOUT: int = 30
+HF_BASE_URL: str = "https://huggingface.co"
+HF_REPO_TYPE: str = "dataset"
+HF_DATASET_REPO: str = "ITMO-NSS/Aiice"
 
 # dataset constants
 
-_DATASET_START = date(1980, 1, 1)
-_DATASET_END   = date(2025, 7, 1)
+MIN_DATASET_START: date = date(1980, 1, 1)
+MAX_DATASET_END: date = date(2025, 7, 1)
 
-_PACKAGE_NAME:str  = "aiice"
+# aiice constants
+
+PACKAGE_NAME: str = "aiice"
+MIN_SPLIT_FRACTION: float = 0.0
+MAX_SPLIT_FRACTION: float = 1.0
