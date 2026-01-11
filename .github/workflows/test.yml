@@ -1,0 +1,53 @@
+name: Tests and Code Style Check
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv & Python
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: 0.9.21
+          python-version: "3.11"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Lint
+        run: |
+          uvx isort --check-only src tests
+          uvx black --diff --check src tests
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.11"
+          - "3.12"
+          - "3.13"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv & Python
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: 0.9.21
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest --cov=. --cov-branch --cov-fail-under=80 tests
