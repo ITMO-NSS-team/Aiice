@@ -4,6 +4,7 @@ from unittest.mock import call, patch
 
 import numpy as np
 import pytest
+import torch
 
 from aiice.loader import Loader
 
@@ -88,19 +89,42 @@ class TestLoader_get(BaseTestLoader):
 
     @patch("aiice.loader.HfDatasetClient.read_file")
     @patch("aiice.loader.HfDatasetClient.get_filenames")
-    def test_ok(self, mock_get_filenames, mock_read_file, loader: Loader):
+    @pytest.mark.parametrize(
+        "tensor_out, expected_type",
+        [
+            (False, np.ndarray),
+            (True, torch.Tensor),
+        ],
+    )
+    def test_ok(
+        self,
+        mock_get_filenames,
+        mock_read_file,
+        tensor_out,
+        expected_type,
+        loader: Loader,
+    ):
         mock_get_filenames.return_value = ["a.npy", "b.npy", "c.npy"]
         mock_read_file.side_effect = [self.fake_bytes] * 3
 
-        result = loader.get(threads=2, step=3)
+        result = loader.get(threads=2, step=3, tensor_out=tensor_out)
 
-        assert isinstance(result, np.ndarray)
-        assert result.shape == (3, 2, 2)
-        mock_read_file.assert_has_calls(
-            [call(filename=f) for f in mock_get_filenames.return_value], any_order=False
-        )
+        assert isinstance(result, expected_type)
+        assert tuple(result.shape) == (3, 2, 2)
+
+        expected_result = np.array([[[1, 2], [3, 4]]] * 3)
+        if tensor_out:
+            np.testing.assert_array_equal(result.numpy(), expected_result)
+        else:
+            np.testing.assert_array_equal(result, expected_result)
+
         mock_get_filenames.assert_has_calls(
-            [call(start=None, end=None, step=3)], any_order=False
+            [call(start=None, end=None, step=3)],
+            any_order=False,
+        )
+        mock_read_file.assert_has_calls(
+            [call(filename=f) for f in mock_get_filenames.return_value],
+            any_order=False,
         )
 
     @patch("aiice.loader.HfDatasetClient.read_file")

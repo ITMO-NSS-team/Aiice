@@ -4,6 +4,7 @@ from datetime import date
 from io import BytesIO
 
 import numpy as np
+import torch
 
 from aiice.core.huggingface import HfDatasetClient
 
@@ -85,9 +86,10 @@ class Loader:
         start: date | None = None,
         end: date | None = None,
         step: int | None = None,
+        tensor_out: bool = False,
         threads: int = 18,
         processes: int | None = None,
-    ) -> np.ndarray:
+    ) -> np.ndarray | torch.Tensor:
         """
         Load dataset into memory.
 
@@ -99,9 +101,11 @@ class Loader:
             End date for files.
         step : int, optional
             Step in days between files.
-        threads: int
+        tensor_out : bool
+            If True, returns torch.Tensor output.
+        threads : int
             Number of parallel download threads.
-        processes: int, optional
+        processes : int, optional
             Number of worker processes used for decoding bytes into numpy matrices.
             If None, uses as many processes as there are CPU cores.
         """
@@ -112,7 +116,12 @@ class Loader:
         with ProcessPoolExecutor(max_workers=processes) as ppool:
             arrays = list(ppool.map(self._decode_raw_file, raw_files))
 
-        return np.stack(arrays)
+        result = np.stack(arrays)
+
+        if not tensor_out:
+            return result
+
+        return torch.from_numpy(result)
 
     def _get_raw_file(self, filename: str) -> bytes:
         raw = self._hf.read_file(filename=filename)
