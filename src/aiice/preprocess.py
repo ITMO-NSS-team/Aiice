@@ -3,6 +3,8 @@ from typing import Sequence
 import torch
 from torch.utils.data import Dataset
 
+from aiice.metrics import _apply_threshold
+
 
 class SlidingWindowDataset(Dataset):
     """
@@ -85,10 +87,7 @@ class SlidingWindowDataset(Dataset):
         ]
 
         if isinstance(self._threshold, float):
-            y = self._apply_threshold(y)
-            x = self._apply_threshold(x) if self._x_binarize else x
+            y = _apply_threshold(y, self._threshold)
+            x = _apply_threshold(x, self._threshold) if self._x_binarize else x
 
         return x, y
-
-    def _apply_threshold(self, tensor: torch.Tensor) -> torch.Tensor:
-        return (tensor > self._threshold).to(tensor.dtype)
