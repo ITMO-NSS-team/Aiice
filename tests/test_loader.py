@@ -26,11 +26,14 @@ class TestLoader_download(BaseTestLoader):
             "b.npy",
             "c.npy",
         ]
-        mock_download.side_effect = [
-            f"{self.test_local_dir}/a.npy",
-            f"{self.test_local_dir}/b.npy",
-            None,
-        ]
+
+        # shouldn't use callable objects as mock cause of thread race safety
+        mock_data = {
+            "a.npy": f"{self.test_local_dir}/a.npy",
+            "b.npy": f"{self.test_local_dir}/b.npy",
+            "c.npy": None,
+        }
+        mock_download.side_effect = lambda filename, local_dir: mock_data[filename]
 
         result = loader.download(
             local_dir=self.test_local_dir,
@@ -105,7 +108,11 @@ class TestLoader_get(BaseTestLoader):
         loader: Loader,
     ):
         mock_get_filenames.return_value = ["a.npy", "b.npy", "c.npy"]
-        mock_read_file.side_effect = [self.fake_bytes] * 3
+
+        def fake_read(filename):
+            return self.fake_bytes
+
+        mock_read_file.side_effect = fake_read
 
         result = loader.get(threads=2, step=3, tensor_out=tensor_out)
 
