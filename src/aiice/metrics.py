@@ -1,3 +1,4 @@
+from collections.abc import Callable, Sequence
 from typing import Sequence
 
 import pytorch_msssim
@@ -10,7 +11,7 @@ def _apply_threshold(tensor: torch.Tensor, threshold: float = 0.5) -> torch.Tens
     return (tensor > threshold).to(tensor.dtype)
 
 
-def _as_tensor(y_true, y_pred, device=None):
+def _as_tensor(y_true: Sequence, y_pred: Sequence, device=None):
     y_true = torch.as_tensor(y_true, dtype=torch.float32, device=device)
     y_pred = torch.as_tensor(y_pred, dtype=torch.float32, device=device)
     return y_true, y_pred
@@ -86,3 +87,94 @@ def ssim(y_true: Sequence, y_pred: Sequence) -> float:
 
     y_true, y_pred = _as_tensor(y_true, y_pred)
     return float(pytorch_msssim.ssim(y_true, y_pred, data_range=1.0))
+
+
+MetricFn = Callable[[Sequence, Sequence], float]
+
+
+class Evaluator:
+    """
+    Computes and aggregates evaluation metrics over multiple evaluation steps.
+
+    Parameters
+    ----------
+    metrics : dict[str, MetricFn] or list[str] or None, optional
+        Metrics to use. If a list of strings is provided, metrics are resolved
+        from the built-in registry. If None, default metrics are used.
+
+    accumulate : bool, default=True
+        Whether to accumulate metric values across multiple ``eval`` calls.
+    """
+
+    _default_metrics: list[str] = ["mae", "mse", "rmse", "psnr", "bin_accuracy", "ssim"]
+
+    def __init__(
+        self,
+        metrics: dict[str, MetricFn] | list[str] | None = None,
+        accumulate: bool = True,
+    ):
+        if metrics is None:
+            self._metrics = self._init_metrics(self._default_metrics)
+        elif isinstance(metrics, list):
+            self._metrics = self._init_metrics(metrics)
+        else:
+            self._metrics = metrics
+
+        self._accumulate = accumulate
+        self._report: dict[str, list[float]] = {k: [] for k in self._metrics}
+
+    def _init_metrics(self, metrics: list[str]) -> dict[str, MetricFn]:
+        registry: dict[str, MetricFn] = {
+            "mae": mae,
+            "mse": mse,
+            "rmse": rmse,
+            "psnr": psnr,
+            "bin_accuracy": bin_accuracy,
+            "ssim": ssim,
+        }
+
+        result = {}
+        for name in metrics:
+            try:
+                result[name] = registry[name]
+            except KeyError:
+                raise ValueError(
+                    f"Unknown metric '{name}', choose from {list(registry)}"
+                )
+        return result
+
+    def eval(self, y_true: Sequence, y_pred: Sequence) -> dict[str, float]:
+        """
+        Evaluate all metrics on a single batch or sample and updates the internal
+        report state depending on the ``accumulate`` mode.
+        """
+        step_result: dict[str, float] = {}
+
+        for name, fn in self._metrics.items():
+            value = fn(y_true, y_pred)
+            step_result[name] = value
+
+            if self._accumulate:
+                self._report[name].append(value)
+            else:
+                self._report[name] = [value]
+
+        return step_result
+
+    def report(self) -> dict[str, dict[str, float]]:
+        """
+        Return aggregated statistics for all evaluated metrics.
+        """
+        summary = {}
+        for name, values in self._report.items():
+            if not values:
+                continue
+
+            summary[name] = {
+                "mean": sum(values) / len(values),
+                "last": values[-1],
+                "count": len(values),
+                "min": min(values),
+                "max": max(values),
+            }
+        return summary

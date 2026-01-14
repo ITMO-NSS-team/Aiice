@@ -3,7 +3,7 @@ import math
 import pytest
 import torch
 
-from aiice.metrics import bin_accuracy, mae, mse, psnr, rmse, ssim
+from aiice.metrics import Evaluator, bin_accuracy, mae, mse, psnr, rmse, ssim
 
 
 class TestMetrics:
@@ -93,3 +93,95 @@ class TestMetrics:
     def test_ssim_raise(self, y_true, y_pred):
         with pytest.raises(ValueError):
             ssim(y_true, y_pred)
+
+
+class TestEvaluator:
+
+    def test_default_metrics_initialized(self):
+        ev = Evaluator()
+
+        assert set(ev._metrics.keys()) == {
+            "mae",
+            "mse",
+            "rmse",
+            "psnr",
+            "bin_accuracy",
+            "ssim",
+        }
+        for k in ev._metrics:
+            assert ev._report[k] == []
+
+    def test_eval_single_step_accumulate(self):
+        ev = Evaluator(metrics=["mae", "mse"])
+
+        y_true = [1, 2, 3]
+        y_pred = [2, 2, 4]
+
+        step = ev.eval(y_true, y_pred)
+
+        assert math.isclose(step["mae"], 2 / 3, abs_tol=1e-6)
+        assert math.isclose(step["mse"], (1 + 0 + 1) / 3, abs_tol=1e-6)
+
+        rep = ev.report()
+
+        assert rep["mae"]["count"] == 1
+        assert rep["mse"]["count"] == 1
+        assert math.isclose(rep["mae"]["mean"], 2 / 3, abs_tol=1e-6)
+        assert math.isclose(rep["mae"]["last"], 2 / 3, abs_tol=1e-6)
+
+    def test_eval_multiple_steps_accumulate(self):
+        ev = Evaluator(metrics=["mae"], accumulate=True)
+
+        ev.eval([1, 2], [1, 2])  # mae = 0
+        ev.eval([1, 2], [2, 2])  # mae = 0.5
+        ev.eval([1, 2], [3, 2])  # mae = 1.0
+
+        rep = ev.report()["mae"]
+
+        assert rep["count"] == 3
+        assert math.isclose(rep["mean"], (0 + 0.5 + 1.0) / 3)
+        assert math.isclose(rep["last"], 1.0)
+        assert math.isclose(rep["min"], 0.0)
+        assert math.isclose(rep["max"], 1.0)
+
+    def test_eval_overwrite_mode(self):
+        ev = Evaluator(metrics=["mae"], accumulate=False)
+
+        ev.eval([1, 2], [1, 2])  # 0
+        ev.eval([1, 2], [2, 2])  # 0.5
+        ev.eval([1, 2], [3, 2])  # 1.0
+
+        rep = ev.report()["mae"]
+
+        assert rep["count"] == 1
+        assert math.isclose(rep["mean"], 1.0)
+        assert math.isclose(rep["last"], 1.0)
+
+    def test_eval_returns_step_metrics(self):
+        ev = Evaluator(metrics=["mae", "mse"])
+
+        step = ev.eval([1, 2, 3], [2, 2, 4])
+
+        assert set(step.keys()) == {"mae", "mse"}
+        assert math.isclose(step["mae"], 2 / 3, abs_tol=1e-6)
+        assert math.isclose(step["mse"], (1 + 0 + 1) / 3, abs_tol=1e-6)
+
+    def test_custom_metrics(self):
+        def always_one(y_true, y_pred):
+            return 1.0
+
+        ev = Evaluator(metrics={"custom": always_one})
+
+        ev.eval([1, 2], [100, 200])
+        ev.eval([5, 6], [7, 8])
+
+        rep = ev.report()["custom"]
+
+        assert rep["count"] == 2
+        assert rep["mean"] == 1.0
+        assert rep["last"] == 1.0
+
+    def test_unknown_metric_raises(self):
+        with pytest.raises(ValueError) as e:
+            Evaluator(metrics=["mae", "unknown_metric"])
+        assert "Unknown metric" in str(e.value)
