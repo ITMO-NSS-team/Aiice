@@ -31,8 +31,9 @@ def loader_get():
     print(data.shape)
 
 def runner_run():
+    
+    
     data = torch.arange(5 * 2 * 3, dtype=torch.float32).reshape(5, 2, 3)
-    print(data)
 
     dataset = SlidingWindowDataset(
         data=data,
