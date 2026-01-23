@@ -58,7 +58,7 @@ class Loader:
         start: date | str | None = None,
         end: date | str | None = None,
         step: int | None = None,
-        threads: int = 32,
+        threads: int = 24,
     ) -> list[str | None]:
         """
         Download dataset files to a local directory in parallel.
