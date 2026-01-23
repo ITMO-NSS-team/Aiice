@@ -114,7 +114,9 @@ class TestLoader_get(BaseTestLoader):
 
         mock_read_file.side_effect = fake_read
 
-        result = loader.get(start="2020-01-01", threads=2, step=3, tensor_out=tensor_out)
+        result = loader.get(
+            start="2020-01-01", threads=2, step=3, tensor_out=tensor_out
+        )
 
         assert isinstance(result, expected_type)
         assert tuple(result.shape) == (3, 2, 2)

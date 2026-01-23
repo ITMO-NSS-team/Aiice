@@ -5,7 +5,11 @@ import httpx
 
 from aiice.constants import DEFAULT_BACKOFF, DEFAULT_RETRIES
 
-RETRY_EXCEPTIONS = (httpx.RemoteProtocolError, httpx.ConnectError, httpx.TimeoutException)
+RETRY_EXCEPTIONS = (
+    httpx.RemoteProtocolError,
+    httpx.ConnectError,
+    httpx.TimeoutException,
+)
 
 
 def retry_on_network_errors(

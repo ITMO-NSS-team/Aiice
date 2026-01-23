@@ -12,7 +12,7 @@ class Loader:
     def __init__(self):
         """
         Dataset Loader with a Hugging Face dataset client.
-        
+
         Downloading a large number of files in parallel may lead to
         request timeouts or temporary server-side errors from
         Hugging Face. If this happens, reduce the number of threads
@@ -133,7 +133,7 @@ class Loader:
             return result
 
         return torch.from_numpy(result)
-    
+
     def _convert_date(self, d: str | date) -> date:
         if isinstance(d, str):
             return datetime.strptime(d, "%Y-%m-%d").date()

@@ -8,6 +8,7 @@ def apply_threshold(tensor: torch.Tensor, threshold: float = 0.5) -> torch.Tenso
     "Binarize tensor with a threshold"
     return (tensor > threshold).to(tensor.dtype)
 
+
 def apply_downsample(t: torch.Tensor, i: int) -> torch.Tensor:
     """
     Removes every i-th element along the last axis of the tensor.

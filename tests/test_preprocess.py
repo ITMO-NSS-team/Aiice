@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from aiice.preprocess import SlidingWindowDataset, apply_threshold, apply_downsample
+from aiice.preprocess import SlidingWindowDataset, apply_downsample, apply_threshold
 
 
 class TestSlidingWindowDataset:
@@ -184,16 +184,16 @@ class TestApply:
                 [0, 2, 4],
             ),
             (
-                torch.arange(12).reshape(3,4),
+                torch.arange(12).reshape(3, 4),
                 2,
-                (3,2),
-                [[0,2],[4,6],[8,10]],
+                (3, 2),
+                [[0, 2], [4, 6], [8, 10]],
             ),
             (
-                torch.arange(24).reshape(2,3,4),
+                torch.arange(24).reshape(2, 3, 4),
                 3,
-                (2,3,2),
-                [[[0,3],[4,7],[8,11]],[[12,15],[16,19],[20,23]]],
+                (2, 3, 2),
+                [[[0, 3], [4, 7], [8, 11]], [[12, 15], [16, 19], [20, 23]]],
             ),
         ],
     )
