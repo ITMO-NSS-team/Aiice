@@ -174,7 +174,6 @@ class TestApply:
         assert torch.is_tensor(out)
         np.testing.assert_array_equal(out.cpu().numpy(), np.array(expected))
 
-
     @pytest.mark.parametrize(
         "tensor, i, axes, expected_shape, expected_values",
         [
