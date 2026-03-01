@@ -12,7 +12,6 @@ def retry_decorator():
 
 
 class TestRetryOnNetworkErrors:
-
     def test_call_n_times_on_error(self, retry_decorator):
         mock_func = Mock(side_effect=httpx.RemoteProtocolError("fail"))
         decorated = retry_decorator(mock_func)

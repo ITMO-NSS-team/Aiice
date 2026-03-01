@@ -114,11 +114,7 @@ class TestLoader_get(BaseTestLoader):
     ):
         filenames = ["a.npy", "b.npy", "c.npy"]
         mock_get_filenames.return_value = filenames
-
-        def fake_read(filename):
-            return self.fake_bytes
-
-        mock_read_file.side_effect = fake_read
+        mock_read_file.side_effect = lambda filename: self.fake_bytes
 
         fake_dates = [date(2020, 1, i + 1) for i in range(len(filenames))]
         mock_get_date.side_effect = fake_dates
@@ -166,4 +162,4 @@ class TestLoader_get(BaseTestLoader):
 
         with pytest.raises(ValueError) as err:
             loader.get()
-        assert "Remote file" in str(err.value)
+            assert "Remote file" in str(err.value)

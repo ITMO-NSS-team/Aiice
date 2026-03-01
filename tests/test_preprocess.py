@@ -148,7 +148,6 @@ class TestSlidingWindowDataset:
 
 
 class TestApply:
-
     @pytest.mark.parametrize(
         "tensor, threshold, expected",
         [

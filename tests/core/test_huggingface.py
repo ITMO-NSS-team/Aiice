@@ -26,7 +26,6 @@ class BaseTestHfDatasetClient:
 
 
 class TestHfDatasetClient_get_filename_template(BaseTestHfDatasetClient):
-
     @pytest.mark.parametrize(
         "value, expected",
         [
@@ -39,7 +38,6 @@ class TestHfDatasetClient_get_filename_template(BaseTestHfDatasetClient):
 
 
 class TestHfDatasetClient_get_date_from_filename_template(BaseTestHfDatasetClient):
-
     @pytest.mark.parametrize(
         "value, expected",
         [
@@ -52,7 +50,6 @@ class TestHfDatasetClient_get_date_from_filename_template(BaseTestHfDatasetClien
 
 
 class TestHfDatasetClient_get_filenames(BaseTestHfDatasetClient):
-
     def test_full_range(self, client: HfDatasetClient):
         files = client.get_filenames()
         expected_len = (client.dataset_end - client.dataset_start).days + 1
@@ -106,29 +103,29 @@ class TestHfDatasetClient_get_filenames(BaseTestHfDatasetClient):
         assert files[-1] == client._get_filename_template(client.dataset_end)
 
     def test_start_before_dataset_start_raises(self, client: HfDatasetClient):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             client.get_filenames(start=client.dataset_start - timedelta(days=1))
+            assert "date start value should be > " in str(err.value)
 
     def test_end_after_dataset_end_raises(self, client: HfDatasetClient):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             client.get_filenames(end=client.dataset_end + timedelta(days=1))
+            assert "date end value should be <" in str(err.value)
 
     def test_start_after_end_raises(self, client: HfDatasetClient):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             client.get_filenames(start=date(2022, 1, 10), end=date(2022, 1, 1))
+            assert "start date must be <= date end" in str(err.value)
 
 
 class TestHfDatasetClient_read_file(BaseTestHfDatasetClient):
-
     @patch("aiice.core.huggingface.http_get")
     def test_ok(self, mock_http_get, client: HfDatasetClient):
         file_value = b"content doesn't matter"
         buf = BytesIO(file_value)
-
-        def fake_http_get(url, temp_file, **kwargs):
-            temp_file.write(buf.getvalue())
-
-        mock_http_get.side_effect = fake_http_get
+        mock_http_get.side_effect = lambda url, temp_file, **kwargs: temp_file.write(
+            buf.getvalue()
+        )
 
         result = client.read_file("dummy.npy")
 
@@ -157,11 +154,10 @@ class TestHfDatasetClient_read_file(BaseTestHfDatasetClient):
 
         with pytest.raises(RuntimeError) as err:
             client.read_file("dummy.npy")
-        assert "Network error" in str(err.value)
+            assert "Network error" in str(err.value)
 
 
 class TestHfDatasetClient_download_file(BaseTestHfDatasetClient):
-
     @patch("aiice.core.huggingface.HfApi.hf_hub_download")
     def test_ok(self, mock_download, client: HfDatasetClient):
         mock_download.return_value = "/tmp/dummy.npy"
@@ -190,17 +186,13 @@ class TestHfDatasetClient_download_file(BaseTestHfDatasetClient):
 
         with pytest.raises(RuntimeError) as err:
             client.download_file("dummy.npy", "/tmp")
-        assert "Failed to download file" in str(err.value)
+            assert "Failed to download file" in str(err.value)
 
 
 class TestHfDatasetClient_info(BaseTestHfDatasetClient):
-
     @patch.object(HfDatasetClient, "_fetch_year_stats")
     def test_info_without_per_year(self, mock_fetch, client: HfDatasetClient):
-        def fake_fetch(year):
-            return (year, year - 1999, (year - 1999) * 1000)
-
-        mock_fetch.side_effect = fake_fetch
+        mock_fetch.side_effect = lambda year: (year, year - 1999, (year - 1999) * 1000)
 
         result = client.info(per_year=False, threads=2)
 
@@ -222,10 +214,7 @@ class TestHfDatasetClient_info(BaseTestHfDatasetClient):
 
     @patch.object(HfDatasetClient, "_fetch_year_stats")
     def test_info_with_per_year(self, mock_fetch, client: HfDatasetClient):
-        def fake_fetch(year):
-            return (year, year - 1999, (year - 1999) * 1000)
-
-        mock_fetch.side_effect = fake_fetch
+        mock_fetch.side_effect = lambda year: (year, year - 1999, (year - 1999) * 1000)
 
         result = client.info(per_year=True, threads=2)
         per_year = result[KEY_PER_YEAR]

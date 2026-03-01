@@ -6,8 +6,8 @@
 .. include:: ../../CONTRIBUTE.md
 """
 
-from aiice import core, loader, metrics, preprocess, runner
+from aiice import core, loader, metrics, preprocess
 from aiice.benchmark import AIICE
 
 # visible modules to pdoc
-__all__ = ["AIICE", "core", "loader", "metrics", "preprocess", "runner"]
+__all__ = ["AIICE", "core", "loader", "metrics", "preprocess"]

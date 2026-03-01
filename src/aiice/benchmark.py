@@ -2,11 +2,11 @@ from datetime import date
 
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from aiice.loader import Loader
-from aiice.metrics import MetricFn
+from aiice.metrics import Evaluator, MetricFn
 from aiice.preprocess import SlidingWindowDataset
-from aiice.runner import Runner
 
 
 class AIICE:
@@ -14,8 +14,8 @@ class AIICE:
     High-level interface for loading Arctic ice data, preparing datasets, and benchmarking models.
 
     This class provides a simple API to:
-    1. Load historical ice data within a specified date range
-    2. Convert the data into sliding-window datasets
+    1. Load historical ice data within a specified date range (see `aiice.loader.Loader`)
+    2. Convert the data into sliding-window datasets (see `aiice.preprocess.SlidingWindowDataset`)
     3. Create a PyTorch DataLoader for batch processing
     4. Benchmark any PyTorch model on the OSI-SAF dataset with specified metrics
 
@@ -58,8 +58,11 @@ class AIICE:
             idx_out=True,
         )
 
+        self._idx_dates = raw_data[0]
+        self._matrices = raw_data[1]
+
         dataset = SlidingWindowDataset(
-            data=raw_data,
+            data=self._matrices,
             pre_history_len=pre_history_len,
             forecast_len=forecast_len,
             threshold=threshold,
@@ -76,17 +79,23 @@ class AIICE:
         self, model: nn.Module, metrics: dict[str, MetricFn] | list[str] | None = None
     ) -> dict[str, list[float]]:
         """
-        Run a benchmarking evaluation on the dataset using the provided model.
-        Check in more details: `aiice.runner.Runner` and `aiice.metrics.Evaluator`
+        Run a benchmarking evaluation on the dataset using the provided model,
+        accumulates evaluation metrics, and returns the aggregated report.
 
         Args:
-            model (nn.Module): PyTorch model to evaluate. Must accept inputs of shape `(batch, pre_history_len, ...)`.
-            metrics (dict[str, MetricFn] | list[str] | None, optional): Metrics to compute during evaluation
+            model (nn.Module):
+                PyTorch model used to generate predictions. The model is expected
+                to accept batches of inputs `x` with shape `(batch, pre_history_len, ...)` shape
+                and return predictions compatible with the provided metrics.
+            metrics (dict[str, MetricFn] | list[str] | None, optional):
+                Metrics to use. If a list of strings is provided, metrics are resolved
+                from the built-in registry. If None, default metrics are used. Defaults to None.
+                Check in more details: `aiice.metrics.Evaluator`
         """
-        runner = Runner(
-            model=model,
-            dataloader=self._dataloader,
-            metrics=metrics,
-            device=self._device,
-        )
-        return runner.run()
+        evaluator = Evaluator(metrics=metrics, accumulate=True)
+        for x, y in tqdm(self._dataloader):
+            x, y = x.to(self._device), y.to(self._device)
+            pred = model(x)
+            evaluator.eval(y, pred)
+
+        return evaluator.report()
