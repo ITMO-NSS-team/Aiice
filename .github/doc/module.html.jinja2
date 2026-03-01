@@ -1,0 +1,33 @@
+{% extends "default/module.html.jinja2" %}
+
+{% block nav_index %}
+    {% set doc = module.docstring | to_markdown %}
+
+    {# 
+       If the doc contains the special marker "<!-- MAIN_README_PDOC -->", 
+       split it into two parts: before and after the marker.
+       Then, adjust the heading levels in the first part to avoid
+       too many top-level headers, and concatenate with the second part.
+    #}
+    {% if "<!-- MAIN_README_PDOC -->" in doc %}
+        {% set parts = doc.split("<!-- MAIN_README_PDOC -->") %}
+        {% set doc = (
+            parts[0]
+            | replace('\n### ', '\n## ')
+            | replace('\n## ', '\n# ')
+        ) ~ parts[1] %}
+    {% endif %}
+
+    {% set index = doc | to_html | attr("toc_html") %}
+    {% if index %}
+        <h2>Contents</h2>
+        {{ index | safe }}
+    {% endif %}
+{% endblock %}
+
+{% block nav_footer %}
+    {# 
+       Add version to the footer via env.
+    #}
+    <footer>Package build <b>{{ env["VERSION"] | default("local") }}</b></footer>
+{% endblock %}

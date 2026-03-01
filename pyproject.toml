@@ -21,11 +21,13 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "pdoc>=16.0.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
 ]
 scripts = [
     "matplotlib>=3.10.8",
+    "torchcnnbuilder>=0.1.5",
 ]
 
 [tool.isort]

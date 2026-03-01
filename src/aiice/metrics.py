@@ -83,11 +83,10 @@ def ssim(y_true: Sequence, y_pred: Sequence) -> float:
     """
     SSIM (structural similarity index measure) - determines spatial patterns coincidence on predicted and target images
 
-    Raises
-    ------
-    ValueError
-        If input tensors are not 4D ([N, C, H, W]) or 5D ([N, C, D, H, W]).
-        If input spatial/temporal dimensions are smaller than 11 (SSIM kernel window size).
+    Raises:
+        ValueError:
+            - If input tensors are not 4D ([N, C, H, W]) or 5D ([N, C, D, H, W]).
+            - If any spatial or temporal dimension is smaller than 11 (minimum SSIM kernel window size)
     """
     spatial_dims = y_true.shape[2:]
     if any(dim < DEFAULT_SSIM_KERNEL_WINDOW_SIZE for dim in spatial_dims):
@@ -104,16 +103,14 @@ MetricFn = Callable[[Sequence, Sequence], float]
 
 class Evaluator:
     """
-    Computes and aggregates evaluation metrics over multiple evaluation steps.
+    Compute and aggregate evaluation metrics over multiple evaluation steps.
 
-    Parameters
-    ----------
-    metrics : dict[str, MetricFn] or list[str] or None, optional
-        Metrics to use. If a list of strings is provided, metrics are resolved
-        from the built-in registry. If None, default metrics are used.
-
-    accumulate : bool, default=True
-        Whether to accumulate metric values across multiple ``eval`` calls.
+    Args:
+        metrics (dict[str, MetricFn] | list[str] | None, optional):
+            Metrics to use. If a list of strings is provided, metrics are resolved
+            from the built-in registry. If None, default metrics are used.
+        accumulate (bool, optional):
+            Whether to accumulate metric values across multiple `eval` calls. Defaults to True.
     """
 
     _metrics_registry: dict[str, MetricFn] = {

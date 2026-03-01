@@ -50,10 +50,8 @@ class Loader:
         """
         Collect dataset statistics.
 
-        Parameters
-        ----------
-        per_year : bool
-            If True, include per-year statistics.
+        Args:
+            per_year (bool): If True, include per-year statistics.
         """
         return self._hf.info(per_year=per_year)
 
@@ -67,20 +65,14 @@ class Loader:
     ) -> list[str | None]:
         """
         Download dataset files to a local directory in parallel.
-        Raw numpy matrices have range values from 0 to 100.
+        Raw numpy matrices in the dataset have range values from 0 to 100.
 
-        Parameters
-        ----------
-        local_dir : str
-            Directory to save files.
-        start : date, str, optional
-            Start date for files.
-        end : date, str, optional
-            End date for files.
-        step : int, optional
-            Step in days between files.
-        threads : int
-            Number of parallel download threads.
+        Args:
+            local_dir (str): Directory to save downloaded files.
+            start (date | str, optional): Start date for files. Defaults to earliest dataset date.
+            end (date | str, optional): End date for files. Defaults to latest dataset date.
+            step (int, optional): Step in days between files. Defaults to 1.
+            threads (int, optional): Number of parallel download threads. Defaults to 24.
         """
         start = self._convert_date(start)
         end = self._convert_date(end)
@@ -105,25 +97,17 @@ class Loader:
         processes: int | None = None,
     ) -> np.ndarray | torch.Tensor | NpWithIdx | TorchWithIdx:
         """
-        Load dataset into memory. Matrices have float range values from 0 to 1.
+        Load dataset files into memory as numpy arrays or torch tensors.
+        Loaded matrices are normalized to float values in the range 0 to 1.
 
-        Parameters
-        ----------
-        start : date, str, optional
-            Start date for files.
-        end : date, str, optional
-            End date for files.
-        step : int, optional
-            Step in days between files.
-        tensor_out : bool
-            If True, returns torch.Tensor output.
-        idx_out: bool
-            If True, returns date indexes of each matrix.
-        threads : int
-            Number of parallel download threads.
-        processes : int, optional
-            Number of worker processes used for decoding bytes into numpy matrices.
-            If None, uses as many processes as there are CPU cores.
+        Args:
+            start (date | str, optional): Start date for files. Defaults to earliest dataset date.
+            end (date | str, optional): End date for files. Defaults to latest dataset date.
+            step (int, optional): Step in days between files. Defaults to 1.
+            tensor_out (bool, optional): If True, returns a torch.Tensor instead of numpy array. Defaults to False.
+            idx_out (bool, optional): If True, returns a tuple of (date indexes, matrices). Defaults to False.
+            threads (int, optional): Number of parallel download threads. Defaults to 18.
+            processes (int, optional): Number of worker processes for decoding raw bytes. Defaults to CPU core count.
         """
         start = self._convert_date(start)
         end = self._convert_date(end)

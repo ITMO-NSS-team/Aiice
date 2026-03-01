@@ -13,16 +13,12 @@ def apply_downsample(
     t: torch.Tensor, i: int, axes: tuple[int, ...] = (-1,)
 ) -> torch.Tensor:
     """
-    Downsamples tensor t by keeping every i-th element along specified axes.
+    Downsample a tensor by keeping every i-th element along specified axes.
 
-    Parameters
-    ----------
-    t : torch.Tensor
-        Input tensor
-    i : int
-        Step for downsampling. Must be > 0.
-    axes : tuple of int
-        Axes along which to downsample. Negative axes are supported.
+    Args:
+        t (torch.Tensor): Input tensor.
+        i (int): Step for downsampling. Must be greater than 0.
+        axes (tuple[int]): Axes along which to downsample. Negative axes are supported.
     """
     if i <= 0:
         raise ValueError("i must be > 0")
@@ -40,42 +36,27 @@ def apply_downsample(
 
 class SlidingWindowDataset(Dataset):
     """
-    Turns a time series into (X, Y) pairs using sliding windows.
+    Convert a time series into (X, Y) pairs using sliding windows.
 
-    X = past window (pre_history_len)
-    Y = future window (forecast_len)
+    X represents past observations of length `pre_history_len`,
+    Y represents future observations of length `forecast_len`.
 
     The dataset is generated lazily: windows are sliced on demand from the
     original tensor without materializing the full dataset in memory.
-
     The time dimension is assumed to be the first axis of the input tensor.
 
-    Parameters
-    ----------
-    data : Sequence
-        Time series data of shape ``[T, ...]`` where ``T`` is the time dimension
-        and the remaining dimensions represent features or channels.
-
-    pre_history_len : int
-        Number of time steps in each input window (X).
-
-    forecast_len : int
-        Number of time steps in each output window (Y).
-
-    threshold : float or None, optional
-        If provided, binarizes the target tensor ``Y`` using this threshold.
-        Values strictly greater than the threshold are set to 1, and values
-        less than or equal to the threshold are set to 0.
-
-    x_binarize : bool, default=False
-        If True and ``threshold`` is provided, applies the same binarization
-        to the input tensor ``X``.
-
-    device : str or None, optional
-        Device on which to place the tensor (e.g. ``"cpu"``, ``"cuda"``).
-
-    dtype : torch.dtype, default=torch.float32
-        Data type used to convert the input sequence.
+    Args:
+        data (Sequence): Time series data of shape `[T, ...]` where `T` is the time dimension
+            and remaining dimensions represent features or channels.
+        pre_history_len (int): Number of time steps in each input window (X).
+        forecast_len (int): Number of time steps in each output window (Y).
+        threshold (float | None, optional): If provided, binarizes the target tensor Y using this threshold.
+            Values strictly greater than the threshold are set to 1, and values less than or equal to
+            the threshold are set to 0. Defaults to None.
+        x_binarize (bool, optional): If True and `threshold` is provided, applies the same binarization
+            to the input tensor X. Defaults to False.
+        device (str | None, optional): Device on which to place the tensors (e.g., "cpu", "cuda"). Defaults to None.
+        dtype (torch.dtype, optional): Data type used to convert the input sequence. Defaults to torch.float32.
     """
 
     def __init__(

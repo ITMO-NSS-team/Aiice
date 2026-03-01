@@ -78,12 +78,9 @@ class HfDatasetClient:
         """
         Collect dataset size statistics.
 
-        Parameters
-        ----------
-        per_year : bool, optional
-            If True, include per-year file and size statistics.
-        threads : int, optional
-            Number of threads used for parallel HTTP requests.
+        Args:
+            per_year (bool, optional): If True, include per-year file and size statistics. Defaults to False.
+            threads (int, optional): Number of threads used for parallel HTTP requests. Defaults to 24.
         """
         total_files, total_size = 0, 0
         per_year_result = defaultdict(
@@ -136,14 +133,10 @@ class HfDatasetClient:
         """
         Generate dataset filenames for a date range.
 
-        Parameters
-        ----------
-        start : date, optional
-            Start date (inclusive).
-        end : date, optional
-            End date (inclusive).
-        step : int, optional
-            Step in days between files.
+        Args:
+            start (date, optional): Start date (inclusive). Defaults to dataset start.
+            end (date, optional): End date (inclusive). Defaults to dataset end.
+            step (int, optional): Step in days between files. Defaults to 1.
         """
         start = start or self.dataset_start
         end = end or self.dataset_end
@@ -172,10 +165,8 @@ class HfDatasetClient:
         """
         Load a dataset file from Hugging Face into memory.
 
-        Parameters
-        ----------
-        filename : str
-            Relative path to the dataset file.
+        Args:
+            filename (str): Relative path to the dataset file.
         """
         url = f"{self._api_base_url}/datasets/{self._dataset_repo}/resolve/main/{filename}"
         buffer = BytesIO()
@@ -199,12 +190,9 @@ class HfDatasetClient:
         """
         Download a dataset file to a local directory.
 
-        Parameters
-        ----------
-        filename : str
-            Dataset file path.
-        local_dir : str
-            Target directory for download.
+        Args:
+            filename (str): Dataset file path.
+            local_dir (str): Target directory for download.
         """
         try:
             return self._api.hf_hub_download(

@@ -39,6 +39,10 @@ We try to maintain good practices of readable open source code. Therefore, if yo
     # scripts version
     uv add --group=scripts <new-package>
     ```
+- To buid and run doc locally, run:
+    ```shell
+    pdoc --math -d google --no-include-undocumented -t .github/doc/ aiice
+    ```
 
 - To run any debug scripts with the project env, run:
     ```shell

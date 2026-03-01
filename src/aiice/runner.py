@@ -9,26 +9,18 @@ class Runner:
     """
     Utility class for running inference over a dataset and computing metrics.
 
-    The Runner iterates over a given ``DataLoader``, performs forward passes
-    with the provided model, and accumulates evaluation metrics using an ``Evaluator`` instance.
+    The Runner iterates over a given DataLoader, performs forward passes
+    with the provided model, and accumulates evaluation metrics using an Evaluator instance.
 
-    Parameters
-    ----------
-    model : nn.Module
-        PyTorch model used to generate predictions. The model is expected
-        to accept batches of inputs ``x`` and return predictions compatible
-        with the provided metrics.
-
-    dataloader : DataLoader
-        Iterable DataLoader that yields batches of ``(x, y)`` pairs.
-        ``x`` represents model inputs and ``y`` the corresponding targets.
-
-    metrics : dict[str, MetricFn] or list[str] or None, optional
-        Metrics to use. If a list of strings is provided, metrics are resolved
-        from the built-in registry. If None, default metrics are used.
-
-    device : str or None, optional
-        Device on which to place the tensor (e.g. `"cpu", "cuda").
+    Args:
+        model (nn.Module): PyTorch model used to generate predictions. The model is expected
+            to accept batches of inputs `x` and return predictions compatible with the provided metrics.
+        dataloader (DataLoader): Iterable DataLoader that yields batches of `(x, y)` pairs.
+            `x` represents model inputs and `y` the corresponding targets.
+        metrics (dict[str, MetricFn] | list[str] | None, optional):
+            Metrics to use. If a list of strings is provided, metrics are resolved
+            from the built-in registry. If None, default metrics are used. Defaults to None.
+        device (str | None, optional): Device on which to place tensors (e.g., "cpu", "cuda"). Defaults to None.
     """
 
     def __init__(
