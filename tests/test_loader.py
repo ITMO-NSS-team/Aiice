@@ -144,8 +144,13 @@ class TestLoader_download(BaseTestLoader):
 class TestLoader_get(BaseTestLoader):
     def setup_method(self):
         buffer = BytesIO()
+        
+        # sed seed for CI test
+        np.random.seed(42)
+
         # numpy matrix values are ints in range 0...100
         self.fake_matrix = np.random.randint(low=0, high=100, size=DATASET_SHAPE)
+        
         np.save(buffer, self.fake_matrix)
         self.fake_bytes = buffer.getvalue()
 
@@ -166,9 +171,7 @@ class TestLoader_get(BaseTestLoader):
         loader: Loader,
     ):
         with (
-            patch(
-                "aiice.loader.get_date_from_filename_template"
-            ) as mock_get_date_from_filename_template,
+            patch("aiice.loader.get_date_from_filename_template") as mock_get_date_from,
             patch("aiice.loader.HfDatasetClient.read_file") as mock_read_file,
             patch("aiice.loader.HfDatasetClient.get_filenames") as mock_get_filenames,
         ):
@@ -177,7 +180,7 @@ class TestLoader_get(BaseTestLoader):
             mock_read_file.side_effect = lambda filename: self.fake_bytes
 
             fake_dates = [date(2020, 1, i + 1) for i in range(len(filenames))]
-            mock_get_date_from_filename_template.side_effect = fake_dates
+            mock_get_date_from.side_effect = fake_dates
 
             result = loader.get(
                 start="2020-01-01",
@@ -213,16 +216,14 @@ class TestLoader_get(BaseTestLoader):
 
     def test_ok_sea(self, loader: Loader):
         with (
-            patch(
-                "aiice.loader.get_date_from_filename_template"
-            ) as mock_get_date_from_filename_template,
+            patch("aiice.loader.get_date_from_filename_template") as mock_get_date_from,
             patch("aiice.loader.HfDatasetClient.read_file") as mock_read_file,
             patch("aiice.loader.HfDatasetClient.get_filenames") as mock_get_filenames,
         ):
             filenames = ["a.npy"]
             mock_get_filenames.return_value = filenames
             mock_read_file.side_effect = lambda filename: self.fake_bytes
-            mock_get_date_from_filename_template.side_effect = [date(2020, 1, 1)]
+            mock_get_date_from.side_effect = [date(2020, 1, 1)]
 
             result = loader.get(
                 sea="Barents Sea",
