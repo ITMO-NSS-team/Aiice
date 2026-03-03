@@ -167,7 +167,7 @@ class TestLoader_get(BaseTestLoader):
     ):
         with (
             patch(
-                "aiice.loader._get_date_from_filename_template"
+                "aiice.loader.get_date_from_filename_template"
             ) as mock_get_date_from_filename_template,
             patch("aiice.loader.HfDatasetClient.read_file") as mock_read_file,
             patch("aiice.loader.HfDatasetClient.get_filenames") as mock_get_filenames,
@@ -214,7 +214,7 @@ class TestLoader_get(BaseTestLoader):
     def test_ok_sea(self, loader: Loader):
         with (
             patch(
-                "aiice.loader._get_date_from_filename_template"
+                "aiice.loader.get_date_from_filename_template"
             ) as mock_get_date_from_filename_template,
             patch("aiice.loader.HfDatasetClient.read_file") as mock_read_file,
             patch("aiice.loader.HfDatasetClient.get_filenames") as mock_get_filenames,
