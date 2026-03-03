@@ -51,7 +51,17 @@ class BaseTestLoader:
             )
             mask[0, 0] = MASK_SEA_DATA_MAX_VALUE
             mock_decode_raw_matrix.return_value = mask
-            return Loader()
+
+            loader = Loader()
+
+            assert mock_read_file.call_count == 2
+            mock_read_file.assert_has_calls(
+                [
+                    call(filename=MASK_SEA_IDX_PATH),
+                    call(filename=MASK_SEA_DATA_PATH),
+                ]
+            )
+            return loader
 
 
 class TestLoader_download(BaseTestLoader):
@@ -134,13 +144,13 @@ class TestLoader_download(BaseTestLoader):
 class TestLoader_get(BaseTestLoader):
     def setup_method(self):
         buffer = BytesIO()
-        
+
         # sed seed for CI test
         np.random.seed(42)
 
         # numpy matrix values are ints in range 0...100
         self.fake_matrix = np.random.randint(low=0, high=100, size=DATASET_SHAPE)
-        
+
         np.save(buffer, self.fake_matrix)
         self.fake_bytes = buffer.getvalue()
 

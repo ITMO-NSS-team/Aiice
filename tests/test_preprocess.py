@@ -183,7 +183,6 @@ class TestSlidingWindowDataset:
         idx_slice, x0, y0 = dataset[0]
 
         assert idx_slice == expected_idx0
-        np.testing.assert_array_equal(idx_slice.numpy(), np.array(expected_idx0))
         np.testing.assert_array_equal(x0.numpy(), np.array(expected_x0))
         np.testing.assert_array_equal(y0.numpy(), np.array(expected_y0))
 
