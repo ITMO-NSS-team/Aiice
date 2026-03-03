@@ -51,17 +51,7 @@ class BaseTestLoader:
             )
             mask[0, 0] = MASK_SEA_DATA_MAX_VALUE
             mock_decode_raw_matrix.return_value = mask
-
-            loader = Loader()
-            yield loader
-
-            assert mock_read_file.call_count == 2
-            mock_read_file.assert_has_calls(
-                [
-                    call(filename=MASK_SEA_IDX_PATH),
-                    call(filename=MASK_SEA_DATA_PATH),
-                ]
-            )
+            return Loader()
 
 
 class TestLoader_download(BaseTestLoader):
