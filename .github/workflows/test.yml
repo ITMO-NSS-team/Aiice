@@ -1,11 +1,10 @@
-name: Tests and Code Style Check
+name: Validate
 
 on: [push, pull_request]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -32,7 +31,6 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
