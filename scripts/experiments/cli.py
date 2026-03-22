@@ -3,6 +3,7 @@ import logging
 
 import config
 import conv3d
+import conv2d
 import torch
 import yaml
 from torch.utils.data import DataLoader
@@ -42,11 +43,13 @@ def init_dataloaders(cfg: config.Aiice, device: str) -> tuple[DataLoader, DataLo
     train_data = loader.get(
         start=cfg.start_date,
         end=cfg.end_date,
+        sea=cfg.sea,
         step=cfg.step,
         tensor_out=True,
     )
     val_data = loader.get(
         start=cfg.end_date,
+        sea=cfg.sea,
         step=cfg.step,
         tensor_out=True,
     )
@@ -72,6 +75,36 @@ def init_dataloaders(cfg: config.Aiice, device: str) -> tuple[DataLoader, DataLo
     return train_dataloader, val_dataloader
 
 
+def run(
+    logger: logging.Logger,
+    cfg: config.Config,
+    sea: str | None,
+    train_dataloader: DataLoader,
+    val_dataloader: DataLoader,
+    device: str,
+):
+    match cfg.run.model_name:
+        case "conv2d":
+            conv2d.run(
+                logger=logger,
+                cfg=cfg,
+                sea=sea,
+                train_dataloader=train_dataloader,
+                val_dataloader=val_dataloader,
+                device=device,
+            )
+        case "conv3d":
+            conv3d.run(
+                logger=logger,
+                cfg=cfg,
+                sea=sea,
+                train_dataloader=train_dataloader,
+                val_dataloader=val_dataloader,
+                device=device,
+            )
+        case _:
+            raise ValueError("unknown experiment run type")
+
 def main():
     logger = init_logger()
     device = init_device()
@@ -79,17 +112,25 @@ def main():
 
     train_dataloader, val_dataloader = init_dataloaders(cfg.aiice, device)
 
-    match cfg.run.model_name:
-        case "conv3d":
-            conv3d.run(
+    if isinstance(cfg.aiice.sea, list):
+        for sea in cfg.aiice.sea:
+            run(
                 logger=logger,
                 cfg=cfg,
+                sea=sea,
                 train_dataloader=train_dataloader,
                 val_dataloader=val_dataloader,
                 device=device,
             )
-        case _:
-            raise ValueError("unknown experiment run type")
+    else:
+        run(
+            logger=logger,
+            cfg=cfg,
+            sea=cfg.aiice.sea,
+            train_dataloader=train_dataloader,
+            val_dataloader=val_dataloader,
+            device=device,
+        )
 
 
 if __name__ == "__main__":

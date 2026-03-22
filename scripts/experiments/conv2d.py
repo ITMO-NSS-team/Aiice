@@ -78,28 +78,10 @@ def train(
         "out_time_points": out_time_point,
         "convolve_params": {"kernel_size": args["kernel_size"]},
         "transpose_convolve_params": {"kernel_size": args["kernel_size"]},
-        "conv_dim": 3,
+        "conv_dim": 2,
     }
     forecaster_model = ForecasterBase(**forecaster_params)
-
-    padding = tuple(map(lambda x: x // 2, args["kernel_size"]))
-    conv_block = nn.Sequential(
-        nn.Conv3d(
-            in_channels=1,
-            out_channels=4,
-            kernel_size=args["kernel_size"],
-            padding=padding,
-        ),
-        nn.ReLU(inplace=True),
-        nn.Conv3d(
-            in_channels=4,
-            out_channels=1,
-            kernel_size=args["kernel_size"],
-            padding=padding,
-        ),
-        nn.ReLU(inplace=True),
-    )
-    model = nn.Sequential(forecaster_model, conv_block).to(device)
+    model = forecaster_model.to(device)
     model.train()
 
     optimizer = optim.AdamW(model.parameters(), lr=args["lr"])
@@ -120,8 +102,8 @@ def train(
 
         loss = 0
         for x, y in tqdm(train_dataloader):
-            x = x[:, None].to(device)
-            y = y[:, None].to(device)
+            x = x.to(device)
+            y = y.to(device)
 
             optimizer.zero_grad()
 
