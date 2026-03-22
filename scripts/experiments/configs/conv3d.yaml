@@ -25,7 +25,7 @@ run:
       patience: 30
       min_delta: 0.001
 
-    - kernel_size: [7, 7]
+    - kernel_size: [7, 7, 7]
       lr: 0.0001
       max_epoch: 350
       patience: 30

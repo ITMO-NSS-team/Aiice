@@ -2,7 +2,7 @@ output_path: ./outputs
 
 aiice:
   sea: ["Kara Sea", "Barents Sea", "Chukchi Sea", "Sea of Japan", "Laptev Sea"]
-  start_date: "2015-01-01"
+  start_date: "1980-01-01"
   end_date: "2020-01-01"
   pre_history_len: 104
   forecast_len: 52
