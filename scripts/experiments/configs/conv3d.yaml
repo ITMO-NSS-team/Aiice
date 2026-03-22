@@ -1,0 +1,30 @@
+output_path: ./outputs
+
+aiice:
+  sea: Barents
+  start_date: "2024-01-01"
+  end_date: "2025-01-01"
+  pre_history_len: 12 # 104
+  forecast_len: 4 # 52
+  step: 7
+  batch_size: 8
+  data_shape: [64, 64]
+
+run:
+  model_name: conv3d
+
+  experiments:
+    - kernel_size: [3, 3, 3]
+      lr: 0.0001
+      max_epoch: 450
+      patience: 50
+
+    - kernel_size: [5, 5, 5]
+      lr: 0.0001
+      max_epoch: 450
+      patience: 50
+
+    - kernel_size: [7, 7, 7]
+      lr: 0.0001
+      max_epoch: 450
+      patience: 50
