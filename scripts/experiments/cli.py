@@ -37,19 +37,23 @@ def init_config() -> config.Config:
     return config.Config(**data)
 
 
-def init_dataloaders(cfg: config.Aiice, device: str) -> tuple[DataLoader, DataLoader]:
+def init_dataloaders(
+    cfg: config.Aiice,
+    device: str,
+    sea: str | None,
+) -> tuple[DataLoader, DataLoader]:
     loader = Loader()
 
     train_data = loader.get(
         start=cfg.start_date,
         end=cfg.end_date,
-        sea=cfg.sea,
+        sea=sea,
         step=cfg.step,
         tensor_out=True,
     )
     val_data = loader.get(
         start=cfg.end_date,
-        sea=cfg.sea,
+        sea=sea,
         step=cfg.step,
         tensor_out=True,
     )
@@ -70,67 +74,54 @@ def init_dataloaders(cfg: config.Aiice, device: str) -> tuple[DataLoader, DataLo
     train_dataloader = DataLoader(
         train_dataset, batch_size=cfg.batch_size, shuffle=True
     )
-    val_dataloader = DataLoader(val_dataset, batch_size=cfg.batch_size)
+    val_dataloader = DataLoader(
+        val_dataset, batch_size=cfg.batch_size
+    )
 
     return train_dataloader, val_dataloader
 
-
-def run(
-    logger: logging.Logger,
-    cfg: config.Config,
-    sea: str | None,
-    train_dataloader: DataLoader,
-    val_dataloader: DataLoader,
-    device: str,
-):
-    match cfg.run.model_name:
-        case "conv2d":
-            conv2d.run(
-                logger=logger,
-                cfg=cfg,
-                sea=sea,
-                train_dataloader=train_dataloader,
-                val_dataloader=val_dataloader,
-                device=device,
-            )
-        case "conv3d":
-            conv3d.run(
-                logger=logger,
-                cfg=cfg,
-                sea=sea,
-                train_dataloader=train_dataloader,
-                val_dataloader=val_dataloader,
-                device=device,
-            )
-        case _:
-            raise ValueError("unknown experiment run type")
 
 def main():
     logger = init_logger()
     device = init_device()
     cfg = init_config()
 
-    train_dataloader, val_dataloader = init_dataloaders(cfg.aiice, device)
-
+    seas: list[str | None] = []
     if isinstance(cfg.aiice.sea, list):
-        for sea in cfg.aiice.sea:
-            run(
-                logger=logger,
-                cfg=cfg,
-                sea=sea,
-                train_dataloader=train_dataloader,
-                val_dataloader=val_dataloader,
-                device=device,
-            )
+        seas = cfg.aiice.sea
     else:
-        run(
-            logger=logger,
-            cfg=cfg,
-            sea=cfg.aiice.sea,
-            train_dataloader=train_dataloader,
-            val_dataloader=val_dataloader,
-            device=device,
+        seas.append(cfg.aiice.sea)
+
+    for sea in seas:
+        logger.info(f"=== Running for sea: {sea} ===")
+
+        train_dataloader, val_dataloader = init_dataloaders(
+            cfg.aiice, 
+            device=device, 
+            sea=sea,
         )
+
+        match cfg.run.model_name:
+            case "conv2d":
+                conv2d.run(
+                    logger=logger,
+                    cfg=cfg,
+                    sea=sea,
+                    train_dataloader=train_dataloader,
+                    val_dataloader=val_dataloader,
+                    device=device,
+                )
+            case "conv3d":
+                conv3d.run(
+                    logger=logger,
+                    cfg=cfg,
+                    sea=sea,
+                    train_dataloader=train_dataloader,
+                    val_dataloader=val_dataloader,
+                    device=device,
+                )
+            case _:
+                raise ValueError("unknown experiment run type")
 
 
 if __name__ == "__main__":
