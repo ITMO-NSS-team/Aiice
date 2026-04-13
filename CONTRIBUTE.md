@@ -13,12 +13,12 @@ We try to maintain good practices of readable open source code. Therefore, if yo
     ```
   You can also use `pip` in your own Python environment, but using `uv` is the **preferred way** 
   cause of possible dependency resolve problems.  
-  ```shell
-  # dev version
-  pip install -e ".[dev]"
-  # scripts version for running examples
-  pip install -e ".[scripts]"
-  ```
+    ```shell
+    # dev version
+    pip install -e ".[dev]"
+    # scripts version for running examples
+    pip install -e ".[scripts]"
+    ```
 
 - Before committing or pushing changes **run the formatters** from the repository root:
     ```shell
@@ -42,7 +42,7 @@ We try to maintain good practices of readable open source code. Therefore, if yo
 
 - To buid and run docs locally, run:
     ```shell
-    pdoc --math -d google --no-include-undocumented -t .github/doc/ aiice
+    uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ aiice
     ```
 
 - To run any debug scripts with the project env, run:
