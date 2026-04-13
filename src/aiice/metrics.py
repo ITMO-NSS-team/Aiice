@@ -8,6 +8,7 @@ from aiice.constants import (
     BIN_ACCURACY_METRIC,
     COUNT_STAT,
     DEFAULT_SSIM_KERNEL_WINDOW_SIZE,
+    IOU_METRIC,
     LAST_STAT,
     MAE_METRIC,
     MAX_STAT,
@@ -66,7 +67,7 @@ def psnr(y_true: Sequence, y_pred: Sequence) -> float:
     return (20 * torch.log10(max_val) - 10 * torch.log10(mse_val)).item()
 
 
-def bin_accuracy(y_true: Sequence, y_pred: Sequence, threshold: float = 0.5) -> float:
+def bin_accuracy(y_true: Sequence, y_pred: Sequence, threshold: float = 0.7) -> float:
     """
     Binary accuracy - binarization of ice concentration continuous field with threshold which causing the presence of an ice edge
     gives us possibility to compare binary masks of real ice extent and predicted one.
@@ -98,6 +99,30 @@ def ssim(y_true: Sequence, y_pred: Sequence) -> float:
     return float(pytorch_msssim.ssim(y_true, y_pred, data_range=1.0))
 
 
+def iou(y_true: Sequence, y_pred: Sequence, threshold: float = 0.7) -> float:
+    """
+    IoU (Intersection over Union) - measures overlap between binary masks
+    of ground truth and prediction.
+
+    Similar to bin_accuracy but focuses on overlap quality instead of per-pixel equality.
+    """
+    y_true, y_pred = _as_tensor(y_true, y_pred)
+
+    y_true = apply_threshold(y_true, threshold)
+    y_pred = apply_threshold(y_pred, threshold)
+
+    y_true = y_true.view(y_true.size(0), -1)
+    y_pred = y_pred.view(y_pred.size(0), -1)
+
+    intersection = (y_true * y_pred).sum(dim=1)
+    # union = |A| + |B| - |A ∩ B|
+    union = y_true.sum(dim=1) + y_pred.sum(dim=1) - intersection
+
+    eps = 1e-7
+    iou = intersection / (union + eps)
+    return iou.mean().item()
+
+
 MetricFn = Callable[[Sequence, Sequence], float]
 
 
@@ -120,6 +145,7 @@ class Evaluator:
         PSNR_METRIC: psnr,
         BIN_ACCURACY_METRIC: bin_accuracy,
         SSIM_METRIC: ssim,
+        IOU_METRIC: iou,
     }
 
     def __init__(

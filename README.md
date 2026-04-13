@@ -23,7 +23,8 @@ The AIICE class provides a simple interface for loading Arctic ice data, prepari
 ```python
 from aiice import AIICE
 
-# Initialize AIICE with a sliding window of past 30 days and forecast of 7 days
+# Initialize AIICE with a sliding window 
+# of past 30 days and forecast of 7 days
 aiice = AIICE(
     pre_history_len=30,
     forecast_len=7,
