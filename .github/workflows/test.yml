@@ -6,11 +6,10 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
+        
       - name: Install uv & Python
         uses: astral-sh/setup-uv@v7
         with:
@@ -25,7 +24,6 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
@@ -44,7 +42,7 @@ jobs:
           version: 0.9.21
           python-version: ${{ matrix.python-version }}
           enable-cache: true
-
+        
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
@@ -53,10 +51,8 @@ jobs:
 
   doc-tests:
     runs-on: ubuntu-latest
-
     env:
       VERSION: ${{ github.ref_name }}
-      
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -72,7 +68,8 @@ jobs:
         run: |
           uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ -o docs/ aiice
 
-      - uses: actions/upload-pages-artifact@v4
+      - name: Load doc
+        uses: actions/upload-pages-artifact@v4
         with:
           path: docs/
     
