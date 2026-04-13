@@ -93,6 +93,7 @@ class AIICE:
         model: nn.Module,
         metrics: dict[str, MetricFn] | list[str] | None = None,
         path: str | None = None,
+        detailed: bool = True,
         plot_workers: int = 4,
         fps: int = 2,
     ) -> dict[str, list[float]]:
@@ -113,13 +114,13 @@ class AIICE:
                 to accept inputs `x` with shape `(batch, pre_history_len, ...)`
                 and return predictions compatible with the selected metrics.
 
-            metrics (dict[str, MetricFn] | list[str] | None, optional):
+            metrics (dict[str, MetricFn] | list[str], optional):
                 Metrics to compute during evaluation. If a list of metric names is
                 provided, the metrics are resolved from the built-in registry.
                 If `None`, default metrics are used.
                 See `aiice.metrics.Evaluator` for details.
 
-            path (str | None, optional):
+            path (str, optional):
                 Directory where forecast visualizations will be saved.
                 If provided, each sample in the dataset will produce a GIF
                 animation showing the forecast horizon, comparing ground truth
@@ -127,6 +128,11 @@ class AIICE:
 
                 The files are named: `<start_forecast_date>_<end_forecast_date>.gif`
                 If `None`, visualization generation is skipped.
+
+            detailed (bool, optional):
+                If True, returns full statistics for each metric including:
+                mean, last value, count, min, and max.
+                If False, returns only the mean value per metric.
 
             plot_workers (int, optional):
                 Number of worker threads used for asynchronous plot generation.
@@ -176,7 +182,7 @@ class AIICE:
                 f.result()
             executor.shutdown(wait=True)
 
-        return evaluator.report()
+        return evaluator.report(detailed=detailed)
 
     @staticmethod
     def _save_batch_plot(

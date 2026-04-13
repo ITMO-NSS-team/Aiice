@@ -1,0 +1,49 @@
+name: Publish doc
+
+on:
+  push:
+    tags:
+      # Publish on any tag starting with a `v`, e.g., v0.1.0
+      - v*
+
+permissions:
+  contents: read
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv & Python
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: 0.9.21
+          python-version: "3.11"
+          enable-cache: true
+
+      - name: Build doc
+        run: |
+          uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ -o docs/ aiice
+
+      - name: Load doc
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/
+    
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

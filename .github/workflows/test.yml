@@ -1,8 +1,9 @@
-name: Validate
+name: Test
 
 on: [push, pull_request]
 
 jobs:
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -21,7 +22,7 @@ jobs:
           uvx isort --check-only src tests
           uvx black --diff --check src tests
 
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -41,9 +42,33 @@ jobs:
           version: 0.9.21
           python-version: ${{ matrix.python-version }}
           enable-cache: true
-
+        
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
       - name: Run tests
         run: uv run pytest --cov=. --cov-branch --cov-fail-under=80 tests
+
+  doc-tests:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv & Python
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: 0.9.21
+          python-version: "3.11"
+          enable-cache: true
+
+      - name: Build doc
+        run: |
+          uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ -o docs/ aiice
+
+      - name: Load doc
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/
