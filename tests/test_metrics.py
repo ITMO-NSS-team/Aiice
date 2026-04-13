@@ -4,7 +4,7 @@ import pytest
 import torch
 
 import aiice.constants as constants
-from aiice.metrics import Evaluator, bin_accuracy, mae, mse, psnr, rmse, ssim
+from aiice.metrics import Evaluator, bin_accuracy, iou, mae, mse, psnr, rmse, ssim
 
 
 class TestMetrics:
@@ -94,6 +94,20 @@ class TestMetrics:
         with pytest.raises(ValueError):
             ssim(y_true, y_pred)
 
+    @pytest.mark.parametrize(
+        "y_true, y_pred, threshold, expected",
+        [
+            ([[[1, 1], [0, 0]]], [[[1, 1], [0, 0]]], 0.5, 1.0),
+            ([[[1, 1], [0, 0]]], [[[0, 0], [1, 1]]], 0.5, 0.0),
+            ([[[1, 1], [0, 0]]], [[[1, 0], [0, 1]]], 0.5, 1 / 3),
+            ([[[1, 1], [0, 0]]], [[[0.3, 0.4], [0.1, 0.2]]], 0.5, 0.0),
+            ([[[1, 0]], [[1, 0]]], [[[1, 0]], [[0, 1]]], 0.5, 0.5),
+        ],
+    )
+    def test_iou_ok(self, y_true, y_pred, threshold, expected):
+        val = iou(y_true, y_pred, threshold)
+        assert math.isclose(val, expected, abs_tol=1e-6)
+
 
 class TestEvaluator:
     def test_default_metrics_initialized(self):
@@ -106,6 +120,7 @@ class TestEvaluator:
             constants.PSNR_METRIC,
             constants.BIN_ACCURACY_METRIC,
             constants.SSIM_METRIC,
+            constants.IOU_METRIC,
         }
         for k in ev._metrics:
             assert ev._report[k] == []

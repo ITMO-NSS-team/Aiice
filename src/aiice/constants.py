@@ -45,6 +45,7 @@ RMSE_METRIC: str = "rmse"
 PSNR_METRIC: str = "psnr"
 BIN_ACCURACY_METRIC: str = "bin_accuracy"
 SSIM_METRIC: str = "ssim"
+IOU_METRIC: str = "iou"
 
 MEAN_STAT: str = "mean"
 LAST_STAT: str = "last"

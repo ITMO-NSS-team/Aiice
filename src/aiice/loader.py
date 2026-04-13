@@ -93,7 +93,7 @@ class Loader:
         start: date | str | None = None,
         end: date | str | None = None,
         step: int | None = None,
-        threads: int = 24,
+        threads: int = 16,
     ) -> list[str | None]:
         """
         Download dataset files to a local directory in parallel.
@@ -126,7 +126,7 @@ class Loader:
         sea: str | None = None,
         tensor_out: bool = False,
         idx_out: bool = False,
-        threads: int = 18,
+        threads: int = 16,
         processes: int | None = None,
     ) -> np.ndarray | torch.Tensor | NpWithIdx | TorchWithIdx:
         """
