@@ -33,6 +33,9 @@ scripts = [
     "torchcnnbuilder>=0.1.5",
 ]
 
+[tool.uv.build-backend]
+module-name = "aiice"
+
 [tool.isort]
 profile = "black"
 
