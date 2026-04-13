@@ -2,9 +2,6 @@ name: Test
 
 on: [push, pull_request]
 
-permissions:
-  contents: read
-
 jobs:
 
   lint:
@@ -75,16 +72,3 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: docs/
-    
-  deploy:
-    needs: doc-tests
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
