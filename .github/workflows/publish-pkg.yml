@@ -30,32 +30,10 @@ jobs:
 
       # Check that basic features work and we didn't miss to include crucial files
       - name: Smoke test (wheel)
-        run: uv run --isolated --no-project --with dist/*.whl tests/smoke_test.py
+        run: uv run --isolated --dev --with dist/*.whl pytest tests/test_benchmark.py
 
       - name: Smoke test (source distribution)
-        run: uv run --isolated --no-project --with dist/*.tar.gz tests/smoke_test.py
+        run: uv run --isolated --dev --with dist/*.tar.gz pytest tests/test_benchmark.py
         
       - name: Publish
         run: uv publish
-    
-  build-doc:
-    runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ github.ref_name }}
-    steps:
-      - name: Install uv & Python
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: 0.9.21
-          python-version: "3.11"
-          enable-cache: true
-
-      - name: Build doc
-        run: |
-          uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ -o docs/ aiice
-
-      - name: Load doc
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: docs/
-    

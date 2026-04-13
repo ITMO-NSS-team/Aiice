@@ -13,7 +13,7 @@
 
 The simplest way to install framework with `pip`:
 ```shell
-pip install aiice
+pip install aiice-bench
 ```
 
 ## Quickstart
@@ -41,4 +41,4 @@ report = aiice.bench(model)
 print(report)
 ```
 
-Check [package doc]() and see more [usage examples](./scripts/examples)
+Check [package doc](https://itmo-nss-team.github.io/Aiice/aiice.html) and see more [usage examples](https://github.com/ITMO-NSS-team/Aiice/tree/main/scripts/examples)
