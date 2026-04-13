@@ -1,6 +1,10 @@
 name: Publish doc
 
-on: [push, pull_request]
+on:
+  push:
+    tags:
+      # Publish on any tag starting with a `v`, e.g., v0.1.0
+      - v*
 
 permissions:
   contents: read
