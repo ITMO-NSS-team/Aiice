@@ -3,8 +3,10 @@ name: Validate
 on: [push, pull_request]
 
 jobs:
+
   lint:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -23,6 +25,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
@@ -48,13 +51,16 @@ jobs:
       - name: Run tests
         run: uv run pytest --cov=. --cov-branch --cov-fail-under=80 tests
 
-  doc:
+  test-doc:
     runs-on: ubuntu-latest
 
     env:
       VERSION: ${{ github.ref_name }}
       
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Install uv & Python
         uses: astral-sh/setup-uv@v7
         with:
@@ -65,20 +71,3 @@ jobs:
       - name: Build doc
         run: |
           uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ -o docs/ aiice
-
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: docs/
-    
-  deploy:
-    needs: doc
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
