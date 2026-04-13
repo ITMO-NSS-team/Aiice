@@ -196,6 +196,20 @@ class TestEvaluator:
         assert rep[constants.MEAN_STAT] == 1.0
         assert rep[constants.LAST_STAT] == 1.0
 
+    def test_report_detailed_false(self):
+        ev = Evaluator(metrics=[constants.MAE_METRIC], accumulate=False)
+
+        ev.eval([1, 2], [1, 2])  # 0
+        ev.eval([1, 2], [2, 2])  # 0.5
+
+        rep = ev.report(detailed=False)
+
+        assert len(rep) == len(ev.metrics)
+
+        for k, v in rep.items():
+            assert isinstance(k, str)
+            assert isinstance(v, float)
+
     def test_unknown_metric_raises(self):
         with pytest.raises(ValueError) as e:
             Evaluator(metrics=[constants.MAE_METRIC, "unknown_metric"])

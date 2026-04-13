@@ -9,8 +9,10 @@ from aiice.constants import (
     COUNT_STAT,
     DEFAULT_SSIM_KERNEL_WINDOW_SIZE,
     IOU_METRIC,
+    JSON_FORMAT,
     LAST_STAT,
     MAE_METRIC,
+    MARKDOWN_FORMAT,
     MAX_STAT,
     MEAN_STAT,
     MIN_STAT,
@@ -196,20 +198,30 @@ class Evaluator:
 
         return step_result
 
-    def report(self) -> dict[str, dict[str, float]]:
+    def report(self, detailed: bool = True) -> dict[str, dict[str, float] | float]:
         """
         Return aggregated statistics for all evaluated metrics.
+
+        Args:
+            detailed (bool, optional):
+                If True, returns full statistics for each metric including:
+                mean, last value, count, min, and max.
+                If False, returns only the mean value per metric.
         """
-        summary: dict[str, dict[str, float]] = {}
+        summary: dict[str, dict[str, float] | float] = {}
         for name, values in self._report.items():
             if not values:
                 continue
 
-            summary[name] = {
-                MEAN_STAT: sum(values) / len(values),
-                LAST_STAT: values[-1],
-                COUNT_STAT: len(values),
-                MIN_STAT: min(values),
-                MAX_STAT: max(values),
-            }
+            if detailed:
+                summary[name] = {
+                    MEAN_STAT: sum(values) / len(values),
+                    LAST_STAT: values[-1],
+                    COUNT_STAT: len(values),
+                    MIN_STAT: min(values),
+                    MAX_STAT: max(values),
+                }
+            else:
+                summary[name] = sum(values) / len(values)
+
         return summary
