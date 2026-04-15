@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 
 import torch
@@ -6,7 +7,6 @@ import torch.nn as nn
 import torch.optim as optim
 import utils
 import yaml
-import math
 from config import Config
 from torch.utils.data import DataLoader
 from torchcnnbuilder.models import ForecasterBase
@@ -19,11 +19,8 @@ def run(
     sea: str | None,
     train_dataloader: DataLoader,
     val_dataloader: DataLoader,
-    device: str,
 ):
-    experiment_path = f"{cfg.output_path}/conv3d"
-    if sea is not None:
-        experiment_path = f"{experiment_path}/{sea}"
+    experiment_path = f"{experiment_path}/conv3d/{sea}"
     os.makedirs(experiment_path, exist_ok=True)
 
     best_loss_value = math.inf
@@ -36,7 +33,7 @@ def run(
 
         i_experiment_path = f"{experiment_path}/{i}"
         os.makedirs(i_experiment_path, exist_ok=True)
-        
+
         loss_value, model = train(
             logger=logger,
             train_dataloader=train_dataloader,
@@ -45,7 +42,7 @@ def run(
             in_time_points=cfg.aiice.pre_history_len,
             out_time_point=cfg.aiice.forecast_len,
             args=experiment,
-            device=device,
+            device=cfg.device,
         )
 
         if loss_value < best_loss_value:

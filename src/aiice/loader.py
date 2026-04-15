@@ -140,7 +140,7 @@ class Loader:
             sea (str, optional): Name of the sea (e.g., "Barents Sea"). Check `Loader.seas` for available ones.
             tensor_out (bool, optional): If True, returns a torch.Tensor instead of numpy array. Defaults to False.
             idx_out (bool, optional): If True, returns a tuple of (date indexes, matrices). Defaults to False.
-            threads (int, optional): Number of parallel download threads. Defaults to 18.
+            threads (int, optional): Number of parallel download threads. Defaults to 16.
             processes (int, optional): Number of worker processes for decoding raw bytes. Defaults to CPU core count.
         """
         if sea is not None and sea not in self._sea_map:

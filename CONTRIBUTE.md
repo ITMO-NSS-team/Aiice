@@ -42,7 +42,7 @@ We try to maintain good practices of readable open source code. Therefore, if yo
 
 - To buid and run docs locally, run:
     ```shell
-    uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ aiice
+    uv run pdoc --math -d google --no-include-undocumented -t .doc/ aiice
     ```
 
 - To run any debug scripts with the project env, run:

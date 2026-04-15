@@ -41,6 +41,8 @@ class SlidingWindowDataset(Dataset):
     X represents past observations of length `pre_history_len`,
     Y represents future observations of length `forecast_len`.
 
+    ![image](../../.doc/media/sliding-window.png)
+
     The dataset is generated lazily: windows are sliced on demand from the
     original tensor without materializing the full dataset in memory.
     The time dimension is assumed to be the first axis of the input tensor.
