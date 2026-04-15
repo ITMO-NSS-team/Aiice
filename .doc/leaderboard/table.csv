@@ -34,13 +34,6 @@ baseline_repeat,Kara Sea,psnr,8.633820533752441
 baseline_repeat,Kara Sea,ssim,0.5905424952507019
 baseline_repeat,Kara Sea,iou,0.4124511480331421
 baseline_repeat,Kara Sea,bin_accuracy,0.7977107763290405
-baseline_mean,Kara Sea,mae,0.1627847701311111
-baseline_mean,Kara Sea,mse,0.0707233324646949
-baseline_mean,Kara Sea,rmse,0.2659385800361633
-baseline_mean,Kara Sea,psnr,11.504372596740724
-baseline_mean,Kara Sea,ssim,0.6040797233581543
-baseline_mean,Kara Sea,iou,0.2826299667358398
-baseline_mean,Kara Sea,bin_accuracy,0.8015975952148438
 baseline_repeat,Barents Sea,mae,0.1513772755861282
 baseline_repeat,Barents Sea,mse,0.1064310669898986
 baseline_repeat,Barents Sea,rmse,0.3262377381324768
@@ -62,10 +55,17 @@ baseline_repeat,Laptev Sea,psnr,10.251351356506348
 baseline_repeat,Laptev Sea,ssim,0.7468234896659851
 baseline_repeat,Laptev Sea,iou,0.5346331596374512
 baseline_repeat,Laptev Sea,bin_accuracy,0.8630180954933167
-baseline_repeat,Sea of Japan,mae,0.016332363709807396
-baseline_repeat,Sea of Japan,mse,0.009577475488185883
-baseline_repeat,Sea of Japan,rmse,0.09786457568407059
+baseline_repeat,Sea of Japan,mae,0.0163323637098073
+baseline_repeat,Sea of Japan,mse,0.0095774754881858
+baseline_repeat,Sea of Japan,rmse,0.0978645756840705
 baseline_repeat,Sea of Japan,psnr,20.187490463256836
 baseline_repeat,Sea of Japan,ssim,0.8790640234947205
-baseline_repeat,Sea of Japan,iou,0.035046014934778214
-baseline_repeat,Sea of Japan,bin_accuracy,0.9894730448722839
+baseline_repeat,Sea of Japan,iou,0.0350460149347782
+baseline_repeat,Sea of Japan,bin_accuracy,0.989473044872284
+baseline_mean,Kara Sea,mae,0.16278477013111115
+baseline_mean,Kara Sea,mse,0.07072333246469498
+baseline_mean,Kara Sea,rmse,0.26593858003616333
+baseline_mean,Kara Sea,psnr,11.504372596740723
+baseline_mean,Kara Sea,ssim,0.6040797233581543
+baseline_mean,Kara Sea,iou,0.28262996673583984
+baseline_mean,Kara Sea,bin_accuracy,0.8015975952148438

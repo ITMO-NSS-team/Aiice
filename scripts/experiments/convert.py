@@ -55,19 +55,14 @@ def append_to_csv(csv_path, model, sea, rows):
     df.to_csv(csv_path, index=False)
 
 
-def build_pivot(df: pd.DataFrame):
-    return df.pivot_table(index=["sea", "metric"], columns="model", values="value")
+def build_bold_pivot(df: pd.DataFrame):
+    pivot = (
+        df.pivot_table(index=["sea", "metric"], columns="model", values="value")
+        .sort_index()
+        .astype(object)
+    )
 
-
-def build_cell_styles(df: pd.DataFrame):
-    pivot = df.pivot_table(
-        index=["sea", "metric"], columns="model", values="value"
-    ).sort_index()
-
-    styles = []
-
-    for row_idx, (idx, row) in enumerate(pivot.iterrows()):
-        sea, metric = idx
+    for (sea, metric), row in pivot.iterrows():
         mode = METRIC_BETTER.get(metric, "max")
 
         values = row.astype(float)
@@ -78,28 +73,24 @@ def build_cell_styles(df: pd.DataFrame):
 
         best = values[valid].max() if mode == "max" else values[valid].min()
 
-        for col_idx, col in enumerate(pivot.columns):
+        for col in pivot.columns:
             val = values[col]
 
             if valid[col] and val == best:
-                styles.append(
-                    {
-                        "selector": f"td.row{row_idx}.col{col_idx}",
-                        "props": [("font-weight", "bold")],
-                    }
-                )
+                pivot.loc[(sea, metric), col] = f"<b>{val:.6f}</b>"
+            else:
+                pivot.loc[(sea, metric), col] = f"{val:.6f}" if valid[col] else ""
 
-    return pivot, styles
+    return pivot
 
 
 def save_html(df: pd.DataFrame, html_path: str):
-    pivot, styles = build_cell_styles(df)
+    pivot = build_bold_pivot(df)
 
     pivot.columns.name = None
     pivot.index.names = [None, None]
 
-    styled = pivot.style.set_table_styles(styles)
-    html = styled.to_html()
+    html = pivot.to_html(escape=False)
 
     with open(html_path, "w") as f:
         f.write(html)
