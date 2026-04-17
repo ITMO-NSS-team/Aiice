@@ -39,13 +39,12 @@ def init_config() -> config.Config:
     return config.Config(**data)
 
 
-def init_dataloaders(
+def  init_train(
     cfg: config.Aiice,
     device: str,
     sea: str | None,
-) -> tuple[DataLoader, DataLoader]:
+) -> DataLoader:
     loader = Loader()
-
     train_data = loader.get(
         start=cfg.start_date,
         end=cfg.end_date,
@@ -54,29 +53,16 @@ def init_dataloaders(
         tensor_out=True,
         threads=8,
     )
-    val_data = loader.get(
-        start=cfg.end_date, sea=sea, step=cfg.step, tensor_out=True, threads=8
-    )
-
     train_dataset = SlidingWindowDataset(
         data=train_data,
         pre_history_len=cfg.pre_history_len,
         forecast_len=cfg.forecast_len,
         device=device,
     )
-    val_dataset = SlidingWindowDataset(
-        data=val_data,
-        pre_history_len=cfg.pre_history_len,
-        forecast_len=cfg.forecast_len,
-        device=device,
-    )
-
     train_dataloader = DataLoader(
         train_dataset, batch_size=cfg.batch_size, shuffle=True
     )
-    val_dataloader = DataLoader(val_dataset, batch_size=cfg.batch_size)
-
-    return train_dataloader, val_dataloader
+    return train_dataloader
 
 
 def main():
@@ -97,7 +83,7 @@ def main():
 
         match cfg.run.model_name:
             case "conv2d":
-                train_dataloader, val_dataloader = init_dataloaders(
+                train_dataloader = init_train(
                     cfg.aiice,
                     device=cfg.device,
                     sea=sea,
@@ -107,11 +93,10 @@ def main():
                     logger=logger,
                     cfg=cfg,
                     sea=sea,
-                    train_dataloader=train_dataloader,
-                    val_dataloader=val_dataloader,
+                    train_dataloader=train_dataloader
                 )
             case "conv3d":
-                train_dataloader, val_dataloader = init_dataloaders(
+                train_dataloader = init_train(
                     cfg.aiice,
                     device=cfg.device,
                     sea=sea,
@@ -122,7 +107,6 @@ def main():
                     cfg=cfg,
                     sea=sea,
                     train_dataloader=train_dataloader,
-                    val_dataloader=val_dataloader,
                 )
             case "baseline_mean":
                 baseline_mean.run(

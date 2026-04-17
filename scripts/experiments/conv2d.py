@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+from aiice import AIICE
 
 import torch
 import torch.nn as nn
@@ -18,9 +19,8 @@ def run(
     cfg: Config,
     sea: str | None,
     train_dataloader: DataLoader,
-    val_dataloader: DataLoader,
 ):
-    experiment_path = f"{experiment_path}/conv2d/{sea}"
+    experiment_path = f"{cfg.output_path}/conv2d/{sea}"
     os.makedirs(experiment_path, exist_ok=True)
 
     best_loss_value = math.inf
@@ -48,10 +48,25 @@ def run(
         if loss_value < best_loss_value:
             best_iteration = i
             best_model = model
+            best_loss_value = loss_value
 
     logger.info(f"Best loss model is here: {experiment_path}/{best_iteration}")
 
-    report = utils.val(model=best_model, val_dataloader=val_dataloader)
+    aiice = AIICE(
+        pre_history_len=cfg.aiice.pre_history_len,
+        forecast_len=cfg.aiice.forecast_len,
+        batch_size=cfg.aiice.batch_size,
+        start=cfg.aiice.end_date,
+        step=cfg.aiice.step,
+        sea=sea,
+        device=cfg.device,
+    )
+    report = aiice.bench(
+        model=best_model,
+        # path=f"{experiment_path}/gif/",
+        plot_workers=8,
+    )
+
     with open(f"{experiment_path}/best-model-{best_iteration}-report.yaml", "w") as f:
         yaml.safe_dump(report, f)
 

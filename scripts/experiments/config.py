@@ -22,4 +22,4 @@ class Config(BaseModel):
     aiice: Aiice
     run: Run
     output_path: str
-    device: str | None
+    device: str | None = None

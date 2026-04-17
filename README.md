@@ -57,188 +57,224 @@ The leaderboard reports the mean performance of each model across the evaluation
       <th></th>
       <th>baseline_mean</th>
       <th>baseline_repeat</th>
+      <th>conv2d</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th rowspan="7" valign="top">Barents Sea</th>
       <th>bin_accuracy</th>
-      <td><b>0.874963</b></td>
+      <td>0.874963</td>
       <td>0.848936</td>
+      <td><b>0.937071</b></td>
     </tr>
     <tr>
       <th>iou</th>
       <td>0.185126</td>
-      <td><b>0.331170</b></td>
+      <td>0.331170</td>
+      <td><b>0.647688</b></td>
     </tr>
     <tr>
       <th>mae</th>
-      <td><b>0.130236</b></td>
+      <td>0.130236</td>
       <td>0.151377</td>
+      <td><b>0.067575</b></td>
     </tr>
     <tr>
       <th>mse</th>
-      <td><b>0.053554</b></td>
+      <td>0.053554</td>
       <td>0.106431</td>
+      <td><b>0.028444</b></td>
     </tr>
     <tr>
       <th>psnr</th>
-      <td><b>12.712070</b></td>
+      <td>12.712070</td>
       <td>9.729317</td>
+      <td><b>15.460110</b></td>
     </tr>
     <tr>
       <th>rmse</th>
-      <td><b>0.231418</b></td>
+      <td>0.231418</td>
       <td>0.326238</td>
+      <td><b>0.168653</b></td>
     </tr>
     <tr>
       <th>ssim</th>
       <td>0.540464</td>
-      <td><b>0.609196</b></td>
+      <td>0.609196</td>
+      <td><b>0.696043</b></td>
     </tr>
     <tr>
       <th rowspan="7" valign="top">Chukchi Sea</th>
       <th>bin_accuracy</th>
       <td>0.656515</td>
-      <td><b>0.675528</b></td>
+      <td>0.675528</td>
+      <td><b>0.947459</b></td>
     </tr>
     <tr>
       <th>iou</th>
       <td>0.126601</td>
-      <td><b>0.364351</b></td>
+      <td>0.364351</td>
+      <td><b>0.865943</b></td>
     </tr>
     <tr>
       <th>mae</th>
-      <td><b>0.269926</b></td>
+      <td>0.269926</td>
       <td>0.300754</td>
+      <td><b>0.069100</b></td>
     </tr>
     <tr>
       <th>mse</th>
-      <td><b>0.124306</b></td>
+      <td>0.124306</td>
       <td>0.246038</td>
+      <td><b>0.023475</b></td>
     </tr>
     <tr>
       <th>psnr</th>
-      <td><b>9.055069</b></td>
+      <td>9.055069</td>
       <td>6.089983</td>
+      <td><b>16.293947</b></td>
     </tr>
     <tr>
       <th>rmse</th>
-      <td><b>0.352571</b></td>
+      <td>0.352571</td>
       <td>0.496022</td>
+      <td><b>0.153215</b></td>
     </tr>
     <tr>
       <th>ssim</th>
-      <td><b>0.405798</b></td>
+      <td>0.405798</td>
       <td>0.385161</td>
+      <td><b>0.651510</b></td>
     </tr>
     <tr>
       <th rowspan="7" valign="top">Kara Sea</th>
       <th>bin_accuracy</th>
-      <td><b>0.801598</b></td>
+      <td>0.801598</td>
       <td>0.797711</td>
+      <td><b>0.939550</b></td>
     </tr>
     <tr>
       <th>iou</th>
       <td>0.282630</td>
-      <td><b>0.412451</b></td>
+      <td>0.412451</td>
+      <td><b>0.785852</b></td>
     </tr>
     <tr>
       <th>mae</th>
-      <td><b>0.162785</b></td>
+      <td>0.162785</td>
       <td>0.185920</td>
+      <td><b>0.065702</b></td>
     </tr>
     <tr>
       <th>mse</th>
-      <td><b>0.070723</b></td>
+      <td>0.070723</td>
       <td>0.136968</td>
+      <td><b>0.025262</b></td>
     </tr>
     <tr>
       <th>psnr</th>
-      <td><b>11.504373</b></td>
+      <td>11.504373</td>
       <td>8.633821</td>
+      <td><b>15.975368</b></td>
     </tr>
     <tr>
       <th>rmse</th>
-      <td><b>0.265939</b></td>
+      <td>0.265939</td>
       <td>0.370091</td>
+      <td><b>0.158939</b></td>
     </tr>
     <tr>
       <th>ssim</th>
-      <td><b>0.604080</b></td>
+      <td>0.604080</td>
       <td>0.590542</td>
+      <td><b>0.725831</b></td>
     </tr>
     <tr>
       <th rowspan="7" valign="top">Laptev Sea</th>
       <th>bin_accuracy</th>
       <td>0.839829</td>
-      <td><b>0.863018</b></td>
+      <td>0.863018</td>
+      <td><b>0.964288</b></td>
     </tr>
     <tr>
       <th>iou</th>
       <td>0.387533</td>
-      <td><b>0.534633</b></td>
+      <td>0.534633</td>
+      <td><b>0.859092</b></td>
     </tr>
     <tr>
       <th>mae</th>
-      <td><b>0.115111</b></td>
+      <td>0.115111</td>
       <td>0.122237</td>
+      <td><b>0.043340</b></td>
     </tr>
     <tr>
       <th>mse</th>
-      <td><b>0.051770</b></td>
+      <td>0.051770</td>
       <td>0.094377</td>
+      <td><b>0.015273</b></td>
     </tr>
     <tr>
       <th>psnr</th>
-      <td><b>12.859248</b></td>
+      <td>12.859248</td>
       <td>10.251351</td>
+      <td><b>18.160892</b></td>
     </tr>
     <tr>
       <th>rmse</th>
-      <td><b>0.227529</b></td>
+      <td>0.227529</td>
       <td>0.307208</td>
+      <td><b>0.123582</b></td>
     </tr>
     <tr>
       <th>ssim</th>
-      <td><b>0.782073</b></td>
+      <td>0.782073</td>
       <td>0.746823</td>
+      <td><b>0.837163</b></td>
     </tr>
     <tr>
       <th rowspan="7" valign="top">Sea of Japan</th>
       <th>bin_accuracy</th>
       <td><b>0.994356</b></td>
       <td>0.989473</td>
+      <td><b>0.994356</b></td>
     </tr>
     <tr>
       <th>iou</th>
       <td>0.000000</td>
       <td><b>0.035046</b></td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>mae</th>
-      <td><b>0.013824</b></td>
+      <td>0.013824</td>
       <td>0.016332</td>
+      <td><b>0.009841</b></td>
     </tr>
     <tr>
       <th>mse</th>
       <td><b>0.004467</b></td>
       <td>0.009577</td>
+      <td>0.005990</td>
     </tr>
     <tr>
       <th>psnr</th>
       <td><b>23.499943</b></td>
       <td>20.187490</td>
+      <td>22.225956</td>
     </tr>
     <tr>
       <th>rmse</th>
       <td><b>0.066835</b></td>
       <td>0.097865</td>
+      <td>0.077393</td>
     </tr>
     <tr>
       <th>ssim</th>
       <td>0.841847</td>
-      <td><b>0.879064</b></td>
+      <td>0.879064</td>
+      <td><b>0.922021</b></td>
     </tr>
   </tbody>
 </table>
