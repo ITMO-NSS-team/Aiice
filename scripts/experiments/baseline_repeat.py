@@ -1,7 +1,6 @@
 import logging
 import os
 
-import torch
 import torch.nn as nn
 import yaml
 from config import Config
