@@ -6,6 +6,7 @@ import baseline_repeat
 import config
 import conv2d
 import conv3d
+import convlstm
 import torch
 import yaml
 from torch.utils.data import DataLoader
@@ -100,6 +101,19 @@ def main():
                 )
 
                 conv3d.run(
+                    logger=logger,
+                    cfg=cfg,
+                    sea=sea,
+                    train_dataloader=train_dataloader,
+                )
+            case "convlstm":
+                train_dataloader = init_train(
+                    cfg.aiice,
+                    device=cfg.device,
+                    sea=sea,
+                )
+
+                convlstm.run(
                     logger=logger,
                     cfg=cfg,
                     sea=sea,
