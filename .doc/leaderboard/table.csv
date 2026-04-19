@@ -139,3 +139,38 @@ conv3d,Sea of Japan,psnr,22.94506549835205
 conv3d,Sea of Japan,ssim,0.9194431006908417
 conv3d,Sea of Japan,iou,0.0
 conv3d,Sea of Japan,bin_accuracy,0.9957307875156403
+convlstm,Barents Sea,mae,0.05729613660110368
+convlstm,Barents Sea,mse,0.02550874650478363
+convlstm,Barents Sea,rmse,0.15957833495404986
+convlstm,Barents Sea,psnr,15.94807677798801
+convlstm,Barents Sea,ssim,0.7847374147839017
+convlstm,Barents Sea,iou,0.671497126420339
+convlstm,Barents Sea,bin_accuracy,0.9417103330294291
+convlstm,Chukchi Sea,mae,0.061956762025753655
+convlstm,Chukchi Sea,mse,0.026551734656095505
+convlstm,Chukchi Sea,rmse,0.16259622077147165
+convlstm,Chukchi Sea,psnr,15.796961784362793
+convlstm,Chukchi Sea,ssim,0.7513460119565328
+convlstm,Chukchi Sea,iou,0.8713891307512919
+convlstm,Chukchi Sea,bin_accuracy,0.9480848511060079
+convlstm,Kara Sea,mae,0.05469258212380939
+convlstm,Kara Sea,mse,0.022223908868100908
+convlstm,Kara Sea,rmse,0.1489128222068151
+convlstm,Kara Sea,psnr,16.550934685601128
+convlstm,Kara Sea,ssim,0.8109785053465102
+convlstm,Kara Sea,iou,0.8059815830654569
+convlstm,Kara Sea,bin_accuracy,0.9459340704811944
+convlstm,Laptev Sea,mae,0.030666334554553032
+convlstm,Laptev Sea,mse,0.011885720149924358
+convlstm,Laptev Sea,rmse,0.10809900446070565
+convlstm,Laptev Sea,psnr,19.40033785502116
+convlstm,Laptev Sea,ssim,0.9074478016959296
+convlstm,Laptev Sea,iou,0.8826382358868917
+convlstm,Laptev Sea,bin_accuracy,0.9708064198493958
+convlstm,Sea of Japan,mae,0.006748842748088969
+convlstm,Sea of Japan,mse,0.002619439140996999
+convlstm,Sea of Japan,rmse,0.051133263442251414
+convlstm,Sea of Japan,psnr,25.774397320217556
+convlstm,Sea of Japan,ssim,0.9238961603906419
+convlstm,Sea of Japan,iou,0.3833347095383538
+convlstm,Sea of Japan,bin_accuracy,0.9954227407773336
