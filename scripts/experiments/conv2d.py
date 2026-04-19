@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-from aiice import AIICE
 
 import torch
 import torch.nn as nn
@@ -12,6 +11,8 @@ from config import Config
 from torch.utils.data import DataLoader
 from torchcnnbuilder.models import ForecasterBase
 from tqdm import tqdm
+
+from aiice import AIICE
 
 
 def run(

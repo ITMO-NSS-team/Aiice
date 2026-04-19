@@ -97,10 +97,45 @@ conv2d,Laptev Sea,psnr,18.160892486572266
 conv2d,Laptev Sea,ssim,0.8371628522872925
 conv2d,Laptev Sea,iou,0.8590916395187378
 conv2d,Laptev Sea,bin_accuracy,0.964288294315338
-conv2d,Sea of Japan,mae,0.00984138622879982
-conv2d,Sea of Japan,mse,0.00598969217389822
-conv2d,Sea of Japan,rmse,0.07739309966564178
-conv2d,Sea of Japan,psnr,22.225955963134766
-conv2d,Sea of Japan,ssim,0.9220214486122131
+conv2d,Sea of Japan,mae,0.0098413862287998
+conv2d,Sea of Japan,mse,0.0059896921738982
+conv2d,Sea of Japan,rmse,0.0773930996656417
+conv2d,Sea of Japan,psnr,22.22595596313477
+conv2d,Sea of Japan,ssim,0.9220214486122132
 conv2d,Sea of Japan,iou,0.0
 conv2d,Sea of Japan,bin_accuracy,0.9943556785583496
+conv3d,Kara Sea,mae,0.1495235934853553
+conv3d,Kara Sea,mse,0.0921853668987751
+conv3d,Kara Sea,rmse,0.3035390526056289
+conv3d,Kara Sea,psnr,10.358038425445557
+conv3d,Kara Sea,ssim,0.5895349681377411
+conv3d,Kara Sea,iou,0.5593975186347961
+conv3d,Kara Sea,bin_accuracy,0.8442450165748596
+conv3d,Barents Sea,mae,0.1138460077345371
+conv3d,Barents Sea,mse,0.0646538250148296
+conv3d,Barents Sea,rmse,0.2542707175016403
+conv3d,Barents Sea,psnr,11.894088745117188
+conv3d,Barents Sea,ssim,0.6181393265724182
+conv3d,Barents Sea,iou,0.4208006858825683
+conv3d,Barents Sea,bin_accuracy,0.8912552297115326
+conv3d,Chukchi Sea,mae,0.1986573487520218
+conv3d,Chukchi Sea,mse,0.1259969547390937
+conv3d,Chukchi Sea,rmse,0.3549584597349167
+conv3d,Chukchi Sea,psnr,8.996499061584473
+conv3d,Chukchi Sea,ssim,0.4496795833110809
+conv3d,Chukchi Sea,iou,0.5858619213104248
+conv3d,Chukchi Sea,bin_accuracy,0.7891101837158203
+conv3d,Laptev Sea,mae,0.0946279838681221
+conv3d,Laptev Sea,mse,0.0664382390677928
+conv3d,Laptev Sea,rmse,0.2576300501823425
+conv3d,Laptev Sea,psnr,11.78432559967041
+conv3d,Laptev Sea,ssim,0.8025429844856262
+conv3d,Laptev Sea,iou,0.6833087503910065
+conv3d,Laptev Sea,bin_accuracy,0.8976292908191681
+conv3d,Sea of Japan,mae,0.00858181482180953
+conv3d,Sea of Japan,mse,0.0049079383024945855
+conv3d,Sea of Japan,rmse,0.0695667639374733
+conv3d,Sea of Japan,psnr,22.94506549835205
+conv3d,Sea of Japan,ssim,0.9194431006908417
+conv3d,Sea of Japan,iou,0.0
+conv3d,Sea of Japan,bin_accuracy,0.9957307875156403

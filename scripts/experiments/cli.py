@@ -39,7 +39,7 @@ def init_config() -> config.Config:
     return config.Config(**data)
 
 
-def  init_train(
+def init_train(
     cfg: config.Aiice,
     device: str,
     sea: str | None,
@@ -90,10 +90,7 @@ def main():
                 )
 
                 conv2d.run(
-                    logger=logger,
-                    cfg=cfg,
-                    sea=sea,
-                    train_dataloader=train_dataloader
+                    logger=logger, cfg=cfg, sea=sea, train_dataloader=train_dataloader
                 )
             case "conv3d":
                 train_dataloader = init_train(
