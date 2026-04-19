@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 
 import torch
@@ -6,11 +7,43 @@ import torch.nn as nn
 import torch.optim as optim
 import utils
 import yaml
-import math
 from config import Config
 from torch.utils.data import DataLoader
 from torchcnnbuilder.models import ForecasterBase
 from tqdm import tqdm
+
+from aiice import AIICE
+
+
+class Conv3dModel(nn.Module):
+    def __init__(self, forecaster_model: nn.Module, kernel_size):
+        super().__init__()
+
+        padding = tuple(k // 2 for k in kernel_size)
+
+        self.forecaster = forecaster_model
+        self.conv = nn.Sequential(
+            nn.Conv3d(
+                in_channels=1,
+                out_channels=4,
+                kernel_size=kernel_size,
+                padding=padding,
+            ),
+            nn.ReLU(inplace=True),
+            nn.Conv3d(
+                in_channels=4,
+                out_channels=1,
+                kernel_size=kernel_size,
+                padding=padding,
+            ),
+        )
+
+    def forward(self, x):
+        # add channel dim (B, T, H, W) -> (B, 1, T, H, W) for conv3d
+        x = x.unsqueeze(1)
+        x = self.forecaster(x)
+        x = self.conv(x)
+        return x.squeeze(1)
 
 
 def run(
@@ -18,12 +51,8 @@ def run(
     cfg: Config,
     sea: str | None,
     train_dataloader: DataLoader,
-    val_dataloader: DataLoader,
-    device: str,
 ):
-    experiment_path = f"{cfg.output_path}/conv3d"
-    if sea is not None:
-        experiment_path = f"{experiment_path}/{sea}"
+    experiment_path = f"{cfg.output_path}/conv3d/{sea}"
     os.makedirs(experiment_path, exist_ok=True)
 
     best_loss_value = math.inf
@@ -36,7 +65,7 @@ def run(
 
         i_experiment_path = f"{experiment_path}/{i}"
         os.makedirs(i_experiment_path, exist_ok=True)
-        
+
         loss_value, model = train(
             logger=logger,
             train_dataloader=train_dataloader,
@@ -45,16 +74,31 @@ def run(
             in_time_points=cfg.aiice.pre_history_len,
             out_time_point=cfg.aiice.forecast_len,
             args=experiment,
-            device=device,
+            device=cfg.device,
         )
 
         if loss_value < best_loss_value:
             best_iteration = i
             best_model = model
+            best_loss_value = loss_value
 
     logger.info(f"Best loss model is here: {experiment_path}/{best_iteration}")
 
-    report = utils.val(model=best_model, val_dataloader=val_dataloader)
+    aiice = AIICE(
+        pre_history_len=cfg.aiice.pre_history_len,
+        forecast_len=cfg.aiice.forecast_len,
+        batch_size=cfg.aiice.batch_size,
+        start=cfg.aiice.end_date,
+        step=cfg.aiice.step,
+        sea=sea,
+        device=cfg.device,
+    )
+    report = aiice.bench(
+        model=best_model,
+        # path=f"{experiment_path}/gif/",
+        plot_workers=8,
+    )
+
     with open(f"{experiment_path}/best-model-{best_iteration}-report.yaml", "w") as f:
         yaml.safe_dump(report, f)
 
@@ -82,24 +126,7 @@ def train(
     }
     forecaster_model = ForecasterBase(**forecaster_params)
 
-    padding = tuple(map(lambda x: x // 2, args["kernel_size"]))
-    conv_block = nn.Sequential(
-        nn.Conv3d(
-            in_channels=1,
-            out_channels=4,
-            kernel_size=args["kernel_size"],
-            padding=padding,
-        ),
-        nn.ReLU(inplace=True),
-        nn.Conv3d(
-            in_channels=4,
-            out_channels=1,
-            kernel_size=args["kernel_size"],
-            padding=padding,
-        ),
-        nn.ReLU(inplace=True),
-    )
-    model = nn.Sequential(forecaster_model, conv_block).to(device)
+    model = Conv3dModel(forecaster_model, args["kernel_size"]).to(device)
     model.train()
 
     optimizer = optim.AdamW(model.parameters(), lr=args["lr"])
@@ -120,8 +147,8 @@ def train(
 
         loss = 0
         for x, y in tqdm(train_dataloader):
-            x = x[:, None].to(device)
-            y = y[:, None].to(device)
+            x = x.to(device)
+            y = y.to(device)
 
             optimizer.zero_grad()
 
@@ -150,6 +177,13 @@ def train(
 
         if epochs_no_improve >= args["patience"]:
             logger.warning("EARLY STOPPING TRIGGERED")
+            break
+
+        if epoch + 1 >= args["initial_patience"] and not loss < args["target_loss"]:
+            logger.warning(
+                f"EARLY ABORT: loss did not go below {args['target_loss']} "
+                f"in first {args['initial_patience']} epochs"
+            )
             break
 
     logger.info("- End of training")

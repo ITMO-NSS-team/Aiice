@@ -36,6 +36,7 @@ class AIICE:
         sea (str, optional): Name of the sea (e.g., "Barents Sea"). Check `Loader.seas` for available ones.
         threshold (float | None, optional): Threshold for binarizing the target Y. Values above threshold are set to 1, below or equal set to 0. Defaults to None.
         x_binarize (bool, optional): Whether to apply the same threshold binarization to input X. Defaults to False.
+        threads (int, optional): Number of parallel download threads. You can reduce this value in case of rate limiting HuggingFace API errors. Defaults to 16.
         device (str | None, optional): Device to place tensors on ("cpu", "cuda", etc.). If None, uses PyTorch default device.
 
     Example:
@@ -55,6 +56,7 @@ class AIICE:
         sea: str | None = None,
         threshold: float | None = None,
         x_binarize: bool = False,
+        threads: int = 16,
         device: str | None = None,
     ):
         self._device = device
@@ -65,6 +67,7 @@ class AIICE:
             end=end,
             step=step,
             sea=sea,
+            threads=threads,
             tensor_out=True,
             idx_out=True,
         )
@@ -130,7 +133,7 @@ class AIICE:
                 If `None`, visualization generation is skipped.
 
             detailed (bool, optional):
-                If True, returns full statistics for each metric including:
+                If True, returns full statistics for each metric like
                 mean, last value, count, min, and max.
                 If False, returns only the mean value per metric.
 

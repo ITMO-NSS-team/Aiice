@@ -30,6 +30,7 @@ dev = [
     "pytest-cov>=7.0.0",
 ]
 scripts = [
+    "pandas>=2.3.3",
     "torchcnnbuilder>=0.1.5",
 ]
 

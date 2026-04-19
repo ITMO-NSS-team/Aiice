@@ -15,18 +15,24 @@ run:
   experiments:
     - kernel_size: [3, 3, 3]
       lr: 0.0001
-      max_epoch: 350
-      patience: 30
+      max_epoch: 375
+      patience: 20
       min_delta: 0.001
+      initial_patience: 20
+      target_loss: 0.3
 
-    - kernel_size: [5, 5, 5]
+    - kernel_size: [3, 3, 3]
       lr: 0.0001
-      max_epoch: 350
-      patience: 30
+      max_epoch: 375
+      patience: 20
       min_delta: 0.001
+      initial_patience: 20
+      target_loss: 0.3
 
-    - kernel_size: [7, 7, 7]
+    - kernel_size: [3, 3, 3]
       lr: 0.0001
-      max_epoch: 350
-      patience: 30
+      max_epoch: 375
+      patience: 20
       min_delta: 0.001
+      initial_patience: 20
+      target_loss: 0.3

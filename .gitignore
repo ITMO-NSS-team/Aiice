@@ -12,6 +12,7 @@
 .local
 .tmp
 .coverage
+outputs
 
 # uv venv
 .venv

@@ -1,9 +1,11 @@
 import argparse
 import logging
 
+import baseline_mean
+import baseline_repeat
 import config
-import conv3d
 import conv2d
+import conv3d
 import convlstm
 import torch
 import yaml
@@ -38,54 +40,38 @@ def init_config() -> config.Config:
     return config.Config(**data)
 
 
-def init_dataloaders(
+def init_train(
     cfg: config.Aiice,
     device: str,
     sea: str | None,
-) -> tuple[DataLoader, DataLoader]:
+) -> DataLoader:
     loader = Loader()
-
     train_data = loader.get(
         start=cfg.start_date,
         end=cfg.end_date,
         sea=sea,
         step=cfg.step,
         tensor_out=True,
+        threads=8,
     )
-    val_data = loader.get(
-        start=cfg.end_date,
-        sea=sea,
-        step=cfg.step,
-        tensor_out=True,
-    )
-
     train_dataset = SlidingWindowDataset(
         data=train_data,
         pre_history_len=cfg.pre_history_len,
         forecast_len=cfg.forecast_len,
         device=device,
     )
-    val_dataset = SlidingWindowDataset(
-        data=val_data,
-        pre_history_len=cfg.pre_history_len,
-        forecast_len=cfg.forecast_len,
-        device=device,
-    )
-
     train_dataloader = DataLoader(
         train_dataset, batch_size=cfg.batch_size, shuffle=True
     )
-    val_dataloader = DataLoader(
-        val_dataset, batch_size=cfg.batch_size
-    )
-
-    return train_dataloader, val_dataloader
+    return train_dataloader
 
 
 def main():
     logger = init_logger()
-    device = init_device()
     cfg = init_config()
+
+    if cfg.device is None:
+        cfg.device = init_device()
 
     seas: list[str | None] = []
     if isinstance(cfg.aiice.sea, list):
@@ -96,39 +82,54 @@ def main():
     for sea in seas:
         logger.info(f"=== Running for sea: {sea} ===")
 
-        train_dataloader, val_dataloader = init_dataloaders(
-            cfg.aiice, 
-            device=device, 
-            sea=sea,
-        )
-
         match cfg.run.model_name:
             case "conv2d":
-                conv2d.run(
-                    logger=logger,
-                    cfg=cfg,
+                train_dataloader = init_train(
+                    cfg.aiice,
+                    device=cfg.device,
                     sea=sea,
-                    train_dataloader=train_dataloader,
-                    val_dataloader=val_dataloader,
-                    device=device,
+                )
+
+                conv2d.run(
+                    logger=logger, cfg=cfg, sea=sea, train_dataloader=train_dataloader
                 )
             case "conv3d":
+                train_dataloader = init_train(
+                    cfg.aiice,
+                    device=cfg.device,
+                    sea=sea,
+                )
+
                 conv3d.run(
                     logger=logger,
                     cfg=cfg,
                     sea=sea,
                     train_dataloader=train_dataloader,
-                    val_dataloader=val_dataloader,
-                    device=device,
                 )
             case "convlstm":
+                train_dataloader = init_train(
+                    cfg.aiice,
+                    device=cfg.device,
+                    sea=sea,
+                )
+
                 convlstm.run(
                     logger=logger,
                     cfg=cfg,
                     sea=sea,
                     train_dataloader=train_dataloader,
-                    val_dataloader=val_dataloader,
-                    device=device,
+                )
+            case "baseline_mean":
+                baseline_mean.run(
+                    logger=logger,
+                    cfg=cfg,
+                    sea=sea,
+                )
+            case "baseline_repeat":
+                baseline_repeat.run(
+                    logger=logger,
+                    cfg=cfg,
+                    sea=sea,
                 )
             case _:
                 raise ValueError("unknown experiment run type")

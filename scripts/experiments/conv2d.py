@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 
 import torch
@@ -6,11 +7,12 @@ import torch.nn as nn
 import torch.optim as optim
 import utils
 import yaml
-import math
 from config import Config
 from torch.utils.data import DataLoader
 from torchcnnbuilder.models import ForecasterBase
 from tqdm import tqdm
+
+from aiice import AIICE
 
 
 def run(
@@ -18,12 +20,8 @@ def run(
     cfg: Config,
     sea: str | None,
     train_dataloader: DataLoader,
-    val_dataloader: DataLoader,
-    device: str,
 ):
-    experiment_path = f"{cfg.output_path}/conv2d"
-    if sea is not None:
-        experiment_path = f"{experiment_path}/{sea}"
+    experiment_path = f"{cfg.output_path}/conv2d/{sea}"
     os.makedirs(experiment_path, exist_ok=True)
 
     best_loss_value = math.inf
@@ -36,7 +34,7 @@ def run(
 
         i_experiment_path = f"{experiment_path}/{i}"
         os.makedirs(i_experiment_path, exist_ok=True)
-        
+
         loss_value, model = train(
             logger=logger,
             train_dataloader=train_dataloader,
@@ -45,16 +43,31 @@ def run(
             in_time_points=cfg.aiice.pre_history_len,
             out_time_point=cfg.aiice.forecast_len,
             args=experiment,
-            device=device,
+            device=cfg.device,
         )
 
         if loss_value < best_loss_value:
             best_iteration = i
             best_model = model
+            best_loss_value = loss_value
 
     logger.info(f"Best loss model is here: {experiment_path}/{best_iteration}")
 
-    report = utils.val(model=best_model, val_dataloader=val_dataloader)
+    aiice = AIICE(
+        pre_history_len=cfg.aiice.pre_history_len,
+        forecast_len=cfg.aiice.forecast_len,
+        batch_size=cfg.aiice.batch_size,
+        start=cfg.aiice.end_date,
+        step=cfg.aiice.step,
+        sea=sea,
+        device=cfg.device,
+    )
+    report = aiice.bench(
+        model=best_model,
+        # path=f"{experiment_path}/gif/",
+        plot_workers=8,
+    )
+
     with open(f"{experiment_path}/best-model-{best_iteration}-report.yaml", "w") as f:
         yaml.safe_dump(report, f)
 

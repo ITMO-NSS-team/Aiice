@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import Any
+
+from pydantic import BaseModel
 
 
 class Aiice(BaseModel):
@@ -14,10 +15,11 @@ class Aiice(BaseModel):
 
 class Run(BaseModel):
     model_name: str
-    experiments: list[dict[str, Any]]
+    experiments: list[dict[str, Any]] = []
 
 
 class Config(BaseModel):
     aiice: Aiice
     run: Run
     output_path: str
+    device: str | None = None

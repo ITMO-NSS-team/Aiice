@@ -28,7 +28,7 @@ jobs:
 
       - name: Build doc
         run: |
-          uv run pdoc --math -d google --no-include-undocumented -t .github/doc/ -o docs/ aiice
+          uv run pdoc --math -d google --no-include-undocumented -t .doc/ -o docs/ aiice
 
       - name: Load doc
         uses: actions/upload-pages-artifact@v4
