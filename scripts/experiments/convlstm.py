@@ -120,7 +120,7 @@ def run(
     sea: str | None,
     train_dataloader: DataLoader,
 ):
-    experiment_path = f"{cfg.output_path}/conv2d/{sea}"
+    experiment_path = f"{cfg.output_path}/convlstm/{sea}"
     os.makedirs(experiment_path, exist_ok=True)
 
     best_loss_value = math.inf
