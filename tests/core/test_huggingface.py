@@ -17,7 +17,7 @@ from aiice.constants import (
     KEY_SIZE_MB,
 )
 from aiice.core.huggingface import HfDatasetClient
-from aiice.core.utils import get_date_from_filename_template, get_filename_template
+from aiice.core.utils import get_filename_template
 
 
 class BaseTestHfDatasetClient:
@@ -57,14 +57,65 @@ class TestHfDatasetClient_get_filenames(BaseTestHfDatasetClient):
         assert files[0] == get_filename_template(start)
         assert files[-1] == get_filename_template(end)
 
-    def test_step(self, client: HfDatasetClient):
-        start, end = date(2020, 1, 30), date(2020, 2, 5)
-        files = client.get_filenames(start=start, end=end, step=3)
+    @pytest.mark.parametrize(
+        "start, end, step, expected_dates",
+        [
+            (
+                date(2020, 1, 30),
+                date(2020, 2, 5),
+                3,
+                [date(2020, 1, 30), date(2020, 2, 2), date(2020, 2, 5)],
+            ),
+            (
+                date(2020, 1, 1),
+                date(2020, 1, 10),
+                "2d",
+                [
+                    date(2020, 1, 1),
+                    date(2020, 1, 3),
+                    date(2020, 1, 5),
+                    date(2020, 1, 7),
+                    date(2020, 1, 9),
+                ],
+            ),
+            (
+                date(2020, 1, 1),
+                date(2020, 1, 15),
+                "1w",
+                [date(2020, 1, 1), date(2020, 1, 8), date(2020, 1, 15)],
+            ),
+            (
+                date(2019, 12, 31),
+                date(2020, 4, 30),
+                "1m",
+                [
+                    date(2019, 12, 31),
+                    date(2020, 1, 31),
+                    date(2020, 2, 29),
+                    date(2020, 3, 31),
+                    date(2020, 4, 30),
+                ],
+            ),
+            (
+                date(2019, 12, 30),
+                date(2020, 4, 30),
+                "2m",
+                [date(2019, 12, 30), date(2020, 2, 29), date(2020, 4, 30)],
+            ),
+            (
+                date(2020, 1, 1),
+                date(2022, 1, 1),
+                "1y",
+                [date(2020, 1, 1), date(2021, 1, 1), date(2022, 1, 1)],
+            ),
+        ],
+    )
+    def test_step(self, client: HfDatasetClient, start, end, step, expected_dates):
+        files = client.get_filenames(start=start, end=end, step=step)
 
-        assert len(files) == 3
-        assert files[0] == get_filename_template(start)
-        assert files[1] == get_filename_template(date(2020, 2, 2))
-        assert files[-1] == get_filename_template(end)
+        assert len(files) == len(expected_dates)
+        for i, expected_date in enumerate(expected_dates):
+            assert files[i] == get_filename_template(expected_date)
 
     def test_single_day_range(self, client: HfDatasetClient):
         day = date(2021, 6, 15)

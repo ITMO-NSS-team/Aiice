@@ -27,17 +27,20 @@ class AIICE:
     4. Benchmark any PyTorch model on the OSI-SAF dataset with specified metrics
 
     Args:
-        pre_history_len (int): Number of past time steps to include in each input sample (X).
-        forecast_len (int): Number of future time steps to predict (Y) in each sample.
-        batch_size (int, optional): Batch size for the DataLoader. Defaults to 16.
-        start (date | str | None, optional): Start date of the data to load. If None, defaults to the earliest available data.
-        end (date | str | None, optional): End date of the data to load. If None, defaults to the latest available data.
-        step (int | None, optional): Step in days between data points. Defaults to 1 if not provided.
-        sea (str, optional): Name of the sea (e.g., "Barents Sea"). Check `Loader.seas` for available ones.
-        threshold (float | None, optional): Threshold for binarizing the target Y. Values above threshold are set to 1, below or equal set to 0. Defaults to None.
-        x_binarize (bool, optional): Whether to apply the same threshold binarization to input X. Defaults to False.
-        threads (int, optional): Number of parallel download threads. You can reduce this value in case of rate limiting HuggingFace API errors. Defaults to 16.
-        device (str | None, optional): Device to place tensors on ("cpu", "cuda", etc.). If None, uses PyTorch default device.
+        pre_history_len (`int`): Number of past time steps to include in each input sample (X).
+        forecast_len (`int`): Number of future time steps to predict (Y) in each sample.
+        batch_size (`int`, optional): Batch size for the DataLoader. Defaults to 16.
+        start (`date`, `str`, optional): Start date of the data to load. If None, defaults to the earliest available data.
+        end (`date`, `str`, optional): End date of the data to load. If None, defaults to the latest available data.
+        step (`int` or `str`, optional): Step between files. If `int` - number of days.
+            If `str` - format like `"1d"`, `"1w"`, `"1m"`, `"1y"`.
+            For month or years steps (`"1m"`, `"2m"`, etc.), the date always lands on the last day
+            of the month (e.g., Jan 31 + 1 month = Feb 28/29, then Mar 31).
+            Defaults to 1 day.
+        threshold (`float`, optional): Threshold for binarizing the target Y. Values above threshold are set to 1, below or equal set to 0. Defaults to None.
+        x_binarize (`bool`, optional): Whether to apply the same threshold binarization to input X. Defaults to False.
+        threads (`int`, optional): Number of parallel download threads. You can reduce this value in case of rate limiting HuggingFace API errors. Defaults to 16.
+        device (`str`, optional): Device to place tensors on ("cpu", "cuda", etc.). If None, uses PyTorch default device.
 
     Example:
         >>> aiice = AIICE(pre_history_len=30, forecast_len=7, batch_size=32, start="2022-01-01", end="2022-12-31")
@@ -112,18 +115,18 @@ class AIICE:
         model inference.
 
         Args:
-            model (nn.Module):
+            model (`nn.Module`):
                 PyTorch model used to generate predictions. The model is expected
                 to accept inputs `x` with shape `(batch, pre_history_len, ...)`
                 and return predictions compatible with the selected metrics.
 
-            metrics (dict[str, MetricFn] | list[str], optional):
+            metrics (`dict[str, MetricFn]` or `list[str]`, optional):
                 Metrics to compute during evaluation. If a list of metric names is
                 provided, the metrics are resolved from the built-in registry.
                 If `None`, default metrics are used.
                 See `aiice.metrics.Evaluator` for details.
 
-            path (str, optional):
+            path (`str`, optional):
                 Directory where forecast visualizations will be saved.
                 If provided, each sample in the dataset will produce a GIF
                 animation showing the forecast horizon, comparing ground truth
@@ -132,21 +135,21 @@ class AIICE:
                 The files are named: `<start_forecast_date>_<end_forecast_date>.gif`
                 If `None`, visualization generation is skipped.
 
-            detailed (bool, optional):
+            detailed (`bool`, optional):
                 If True, returns full statistics for each metric like
                 mean, last value, count, min, and max.
                 If False, returns only the mean value per metric.
 
-            plot_workers (int, optional):
+            plot_workers (`int`, optional):
                 Number of worker threads used for asynchronous plot generation.
                 Increasing this value can speed up visualization when many samples
                 are processed. Defaults to 4.
 
-            fps (int, optional):
+            fps (`int`, optional):
                 Frames per second of the generated GIF animations. Defaults to 2.
 
         Returns:
-            dict[str, list[float]]:
+            `dict[str, list[float]]`:
                 Aggregated metric results returned by the evaluator.
         """
         if path is not None:

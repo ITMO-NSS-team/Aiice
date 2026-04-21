@@ -16,9 +16,9 @@ def apply_downsample(
     Downsample a tensor by keeping every i-th element along specified axes.
 
     Args:
-        t (torch.Tensor): Input tensor.
-        i (int): Step for downsampling. Must be greater than 0.
-        axes (tuple[int]): Axes along which to downsample. Negative axes are supported.
+        t (`torch.Tensor`): Input tensor.
+        i (`int`): Step for downsampling. Must be greater than 0.
+        axes (`tuple[int]`): Axes along which to downsample. Negative axes are supported.
     """
     if i <= 0:
         raise ValueError("i must be > 0")
@@ -48,20 +48,20 @@ class SlidingWindowDataset(Dataset):
     The time dimension is assumed to be the first axis of the input tensor.
 
     Args:
-        data (Sequence): Time series data of shape `[T, ...]` where `T` is the time dimension
+        data (`Sequence`): Time series data of shape `[T, ...]` where `T` is the time dimension
             and remaining dimensions represent features or channels.
-        pre_history_len (int): Number of time steps in each input window (X).
-        forecast_len (int): Number of time steps in each output window (Y).
-        idx (Sequence | None): Optional sequence of any indeces corresponding
+        pre_history_len (`int`): Number of time steps in each input window (X).
+        forecast_len (`int`): Number of time steps in each output window (Y).
+        idx (`Sequence`, optional): Optional sequence of any indeces corresponding
             to each time step in `data`. Must have the same length as the time dimension `T`.
             If provided, `__getitem__` returns a tuple `(id, X, Y)` containing the
             corresponding timestamps for the selected window, otherwise it returns only `(X, Y)`.
-        threshold (float | None, optional): If provided, binarizes the target tensor Y using this threshold.
+        threshold (`float`, optional): If provided, binarizes the target tensor Y using this threshold.
             Values strictly greater than the threshold are set to 1, and values less than or equal to
             the threshold are set to 0. Defaults to None.
-        x_binarize (bool, optional): If True and `threshold` is provided, applies the same binarization
+        x_binarize (`bool`, optional): If True and `threshold` is provided, applies the same binarization
             to the input tensor X. Defaults to False.
-        device (str | None, optional): Device on which to place the tensors (e.g., "cpu", "cuda"). Defaults to None.
+        device (`str`, optional): Device on which to place the tensors (e.g., "cpu", "cuda"). Defaults to None.
         dtype (torch.dtype, optional): Data type used to convert the input sequence. Defaults to torch.float32.
     """
 

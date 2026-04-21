@@ -1,9 +1,11 @@
 import functools
+import re
 import time
 from datetime import date
 from pathlib import Path
 
 import httpx
+from dateutil.relativedelta import relativedelta
 
 from aiice.constants import DEFAULT_BACKOFF, DEFAULT_RETRIES
 
@@ -48,3 +50,33 @@ def get_date_from_filename_template(f: str) -> date:
     month = int(date_part[4:6])
     day = int(date_part[6:8])
     return date(year, month, day)
+
+
+def convert_step_to_delta(step: int | str | None) -> relativedelta:
+    if step is None:
+        return relativedelta(days=1)
+
+    if isinstance(step, int):
+        return relativedelta(days=step)
+
+    if isinstance(step, str):
+        match = re.match(r"^(\d+)([dwmy])$", step)
+        if not match:
+            raise ValueError(
+                f"Invalid step format: {step}. Expected format: <number><unit>, where unit is [d, w, m, y]"
+            )
+
+        value = int(match.group(1))
+        unit = match.group(2)
+
+        match unit:
+            case "d":
+                return relativedelta(days=value)
+            case "w":
+                return relativedelta(weeks=value)
+            case "m":
+                return relativedelta(months=value)
+            case "y":
+                return relativedelta(years=value)
+
+    raise ValueError(f"Invalid step type: {type(step)}")

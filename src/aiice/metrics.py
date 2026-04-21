@@ -67,7 +67,7 @@ def psnr(y_true: Sequence, y_pred: Sequence) -> float:
     return (20 * torch.log10(max_val) - 10 * torch.log10(mse_val)).item()
 
 
-def bin_accuracy(y_true: Sequence, y_pred: Sequence, threshold: float = 0.7) -> float:
+def bin_accuracy(y_true: Sequence, y_pred: Sequence, threshold: float = 0.15) -> float:
     """
     Binary accuracy - binarization of ice concentration continuous field with threshold which causing the presence of an ice edge
     gives us possibility to compare binary masks of real ice extent and predicted one.
@@ -99,7 +99,7 @@ def ssim(y_true: Sequence, y_pred: Sequence) -> float:
     return float(pytorch_msssim.ssim(y_true, y_pred, data_range=1.0))
 
 
-def iou(y_true: Sequence, y_pred: Sequence, threshold: float = 0.7) -> float:
+def iou(y_true: Sequence, y_pred: Sequence, threshold: float = 0.15) -> float:
     """
     IoU (Intersection over Union) - measures overlap between binary masks
     of ground truth and prediction.
@@ -131,10 +131,10 @@ class Evaluator:
     Compute and aggregate evaluation metrics over multiple evaluation steps.
 
     Args:
-        metrics (dict[str, MetricFn] | list[str] | None, optional):
+        metrics (`dict[str, MetricFn]`, `list[str]`, optional):
             Metrics to use. If a list of strings is provided, metrics are resolved
             from the built-in registry. If None, default metrics are used.
-        accumulate (bool, optional):
+        accumulate (`bool`, optional):
             Whether to accumulate metric values across multiple `eval` calls. Defaults to True.
     """
 
@@ -201,7 +201,7 @@ class Evaluator:
         Return aggregated statistics for all evaluated metrics.
 
         Args:
-            detailed (bool, optional):
+            detailed (`bool`, optional):
                 If True, returns full statistics for each metric including:
                 mean, last value, count, min, and max.
                 If False, returns only the mean value per metric.

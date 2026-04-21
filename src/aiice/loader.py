@@ -92,7 +92,7 @@ class Loader:
         local_dir: str,
         start: date | str | None = None,
         end: date | str | None = None,
-        step: int | None = None,
+        step: int | str | None = None,
         threads: int = 16,
     ) -> list[str | None]:
         """
@@ -100,11 +100,15 @@ class Loader:
         Raw numpy matrices in the dataset have range values from 0 to 100.
 
         Args:
-            local_dir (str): Directory to save downloaded files.
-            start (date | str, optional): Start date for files. Defaults to earliest dataset date.
-            end (date | str, optional): End date for files. Defaults to latest dataset date.
-            step (int, optional): Step in days between files. Defaults to 1.
-            threads (int, optional): Number of parallel download threads. Defaults to 24.
+            local_dir (`str`): Directory to save downloaded files.
+            start (`date` or `str`, optional): Start date for files. Defaults to earliest dataset date.
+            end (`date` or `str`, optional): End date for files. Defaults to latest dataset date.
+            step (`int` or `str`, optional): Step between files. If `int` - number of days.
+                If `str` - format like `"1d"`, `"1w"`, `"1m"`, `"1y"`.
+                For month or years steps (`"1m"`, `"2m"`, etc.), the date always lands on the last day
+                of the month (e.g., Jan 31 + 1 month = Feb 28/29, then Mar 31).
+                Defaults to 1 day.
+            threads (`int`, optional): Number of parallel download threads. Defaults to 24.
         """
         start = self._convert_date(start)
         end = self._convert_date(end)
@@ -122,7 +126,7 @@ class Loader:
         self,
         start: date | str | None = None,
         end: date | str | None = None,
-        step: int | None = None,
+        step: int | str | None = None,
         sea: str | None = None,
         tensor_out: bool = False,
         idx_out: bool = False,
@@ -134,14 +138,18 @@ class Loader:
         Loaded matrices are normalized to float values in the range 0 to 1.
 
         Args:
-            start (date | str, optional): Start date for files. Defaults to earliest dataset date.
-            end (date | str, optional): End date for files. Defaults to latest dataset date.
-            step (int, optional): Step in days between files. Defaults to 1.
-            sea (str, optional): Name of the sea (e.g., "Barents Sea"). Check `Loader.seas` for available ones.
-            tensor_out (bool, optional): If True, returns a torch.Tensor instead of numpy array. Defaults to False.
-            idx_out (bool, optional): If True, returns a tuple of (date indexes, matrices). Defaults to False.
-            threads (int, optional): Number of parallel download threads. Defaults to 16.
-            processes (int, optional): Number of worker processes for decoding raw bytes. Defaults to CPU core count.
+            start (`date` or `str`, optional): Start date for files. Defaults to earliest dataset date.
+            end (`date` or `str`, optional): End date for files. Defaults to latest dataset date.
+            step (`int` or `str`, optional): Step between files. If `int` - number of days.
+                If `str` - format like `"1d"`, `"1w"`, `"1m"`, `"1y"`.
+                For month or years steps (`"1m"`, `"2m"`, etc.), the date always lands on the last day
+                of the month (e.g., Jan 31 + 1 month = Feb 28/29, then Mar 31).
+                Defaults to 1 day.
+            sea (`str`, optional): Name of the sea (e.g., "Barents Sea"). Check `Loader.seas` for available ones.
+            tensor_out (`bool`, optional): If True, returns a torch.Tensor instead of numpy array. Defaults to False.
+            idx_out (`bool`, optional): If True, returns a tuple of (date indexes, matrices). Defaults to False.
+            threads (`int`, optional): Number of parallel download threads. Defaults to 16.
+            processes (`int`, optional): Number of worker processes for decoding raw bytes. Defaults to CPU core count.
         """
         if sea is not None and sea not in self._sea_map:
             raise ValueError(f"No such sea. Check available options: {self.seas}")

@@ -13,32 +13,64 @@ from tqdm import tqdm
 
 from aiice import AIICE
 
+
 class ConvLSTMCell(nn.Module):
     def __init__(self, input_channels, hidden_channels, kernel_size=3):
         super(ConvLSTMCell, self).__init__()
         self.hidden_channels = hidden_channels
         padding = kernel_size // 2
 
-        self.Wxi = nn.Conv2d(input_channels, hidden_channels, kernel_size, padding=padding)
-        self.Whi = nn.Conv2d(hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False)
+        self.Wxi = nn.Conv2d(
+            input_channels, hidden_channels, kernel_size, padding=padding
+        )
+        self.Whi = nn.Conv2d(
+            hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False
+        )
         self.w_ci = nn.Parameter(torch.zeros(1, hidden_channels, 1, 1))
 
-        self.Wxf = nn.Conv2d(input_channels, hidden_channels, kernel_size, padding=padding)
-        self.Whf = nn.Conv2d(hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False)
+        self.Wxf = nn.Conv2d(
+            input_channels, hidden_channels, kernel_size, padding=padding
+        )
+        self.Whf = nn.Conv2d(
+            hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False
+        )
         self.w_cf = nn.Parameter(torch.zeros(1, hidden_channels, 1, 1))
 
-        self.Wxo = nn.Conv2d(input_channels, hidden_channels, kernel_size, padding=padding)
-        self.Who = nn.Conv2d(hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False)
+        self.Wxo = nn.Conv2d(
+            input_channels, hidden_channels, kernel_size, padding=padding
+        )
+        self.Who = nn.Conv2d(
+            hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False
+        )
         self.w_co = nn.Parameter(torch.zeros(1, hidden_channels, 1, 1))
 
-        self.Wxc = nn.Conv2d(input_channels, hidden_channels, kernel_size, padding=padding)
-        self.Whc = nn.Conv2d(hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False)
+        self.Wxc = nn.Conv2d(
+            input_channels, hidden_channels, kernel_size, padding=padding
+        )
+        self.Whc = nn.Conv2d(
+            hidden_channels, hidden_channels, kernel_size, padding=padding, bias=False
+        )
+
     def forward(self, x, prev_state):
         batch_size, _, height, width = x.size()
 
         if prev_state is None:
-            h_prev = torch.zeros(batch_size, self.hidden_channels, height, width, device=x.device, dtype=x.dtype)
-            c_prev = torch.zeros(batch_size, self.hidden_channels, height, width, device=x.device, dtype=x.dtype)
+            h_prev = torch.zeros(
+                batch_size,
+                self.hidden_channels,
+                height,
+                width,
+                device=x.device,
+                dtype=x.dtype,
+            )
+            c_prev = torch.zeros(
+                batch_size,
+                self.hidden_channels,
+                height,
+                width,
+                device=x.device,
+                dtype=x.dtype,
+            )
         else:
             h_prev, c_prev = prev_state
 
@@ -53,12 +85,16 @@ class ConvLSTMCell(nn.Module):
         h = o * torch.tanh(c)
 
         return h, (h, c)
+
     def init_hidden(self, batch_size, image_size):
         height, width = image_size
         device = next(self.parameters()).device
-        return (torch.zeros(batch_size, self.hidden_channels, height, width, device=device),
-                torch.zeros(batch_size, self.hidden_channels, height, width, device=device))
-    
+        return (
+            torch.zeros(batch_size, self.hidden_channels, height, width, device=device),
+            torch.zeros(batch_size, self.hidden_channels, height, width, device=device),
+        )
+
+
 class ConvLSTMEncoderDecoder(nn.Module):
     """Многошаговая модель Encoder-Decoder"""
 
@@ -91,7 +127,6 @@ class ConvLSTMEncoderDecoder(nn.Module):
             h1, encoder_state1 = self.encoder_lstm1(frame, encoder_state1)
             h2, encoder_state2 = self.encoder_lstm2(h1, encoder_state2)
 
-
         h_enc1, c_enc1 = encoder_state1
         h_enc2, c_enc2 = encoder_state2
         decoder_state1 = (h_enc2, c_enc2)
@@ -114,6 +149,7 @@ class ConvLSTMEncoderDecoder(nn.Module):
 
         return torch.stack(all_predictions, dim=0).permute(1, 0, 2, 3).contiguous()
 
+
 def run(
     logger: logging.Logger,
     cfg: Config,
@@ -131,7 +167,7 @@ def run(
 
         i_experiment_path = f"{experiment_path}/{i}"
         os.makedirs(i_experiment_path, exist_ok=True)
-        
+
         loss_value, model = train(
             logger=logger,
             train_dataloader=train_dataloader,
@@ -158,10 +194,10 @@ def run(
         device=cfg.device,
     )
     report = aiice.bench(
-            model=best_model,
-            # path=f"{experiment_path}/gif/",
-            plot_workers=8,
-        )
+        model=best_model,
+        # path=f"{experiment_path}/gif/",
+        plot_workers=8,
+    )
     with open(f"{experiment_path}/best-model-{best_iteration}-report.yaml", "w") as f:
         yaml.safe_dump(report, f)
 
@@ -176,8 +212,8 @@ def train(
     args: dict[str, any],
     device: str,
 ) -> tuple[float, nn.Module]:
-    
-    model = ConvLSTMEncoderDecoder(num_prediction_steps = out_time_point).to(device)
+
+    model = ConvLSTMEncoderDecoder(num_prediction_steps=out_time_point).to(device)
     model.train()
 
     optimizer = optim.AdamW(model.parameters(), lr=args["lr"])

@@ -31,7 +31,11 @@ from aiice.constants import (
     MIN_DATASET_START,
     YEAR_STATS_CACHE_SIZE,
 )
-from aiice.core.utils import get_filename_template, retry_on_network_errors
+from aiice.core.utils import (
+    convert_step_to_delta,
+    get_filename_template,
+    retry_on_network_errors,
+)
 
 
 class HfDatasetClient:
@@ -80,8 +84,8 @@ class HfDatasetClient:
         Collect dataset size statistics.
 
         Args:
-            per_year (bool, optional): If True, include per-year file and size statistics. Defaults to False.
-            threads (int, optional): Number of threads used for parallel HTTP requests. Defaults to 24.
+            per_year (`bool`, optional): If True, include per-year file and size statistics. Defaults to False.
+            threads (`int`, optional): Number of threads used for parallel HTTP requests. Defaults to 24.
         """
         total_files, total_size = 0, 0
         per_year_result = defaultdict(
@@ -129,15 +133,19 @@ class HfDatasetClient:
         self,
         start: date | None = None,
         end: date | None = None,
-        step: int | None = None,
+        step: int | str | None = None,
     ) -> list[str]:
         """
         Generate dataset filenames for a date range.
 
         Args:
-            start (date, optional): Start date (inclusive). Defaults to dataset start.
-            end (date, optional): End date (inclusive). Defaults to dataset end.
-            step (int, optional): Step in days between files. Defaults to 1.
+            start (`date`, optional): Start date (inclusive). Defaults to dataset start.
+            end (`date`, optional): End date (inclusive). Defaults to dataset end.
+            step (`int` or `str`, optional): Step between files. If `int` - number of days.
+                If `str` - format like `"1d"`, `"1w"`, `"1m"`, `"1y"`.
+                For month or years steps (`"1m"`, `"2m"`, etc.), the date always lands on the last day
+                of the month (e.g., Jan 31 + 1 month = Feb 28/29, then Mar 31).
+                Defaults to 1 day.
         """
         start = start or self.dataset_start
         end = end or self.dataset_end
@@ -153,7 +161,7 @@ class HfDatasetClient:
 
         filenames: list[str] = []
         current = start
-        delta = timedelta(days=step or 1)
+        delta = convert_step_to_delta(step=step)
 
         while current <= end:
             filenames.append(get_filename_template(current))
@@ -167,7 +175,7 @@ class HfDatasetClient:
         Load a dataset file from Hugging Face into memory.
 
         Args:
-            filename (str): Relative path to the dataset file.
+            filename (`str`): Relative path to the dataset file.
         """
         url = f"{self._api_base_url}/datasets/{self._dataset_repo}/resolve/main/{filename}"
         buffer = BytesIO()
@@ -193,8 +201,8 @@ class HfDatasetClient:
         Download a dataset file to a local directory.
 
         Args:
-            filename (str): Dataset file path.
-            local_dir (str): Target directory for download.
+            filename (`str`): Dataset file path.
+            local_dir (`str`): Target directory for download.
         """
         try:
             return self._api.hf_hub_download(
