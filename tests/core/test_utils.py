@@ -78,12 +78,12 @@ class Test_convert_step_to_delta:
             ("4w", relativedelta(weeks=4)),
             ("3m", relativedelta(months=3, day=31)),
             ("12m", relativedelta(months=12, day=31)),
-            ("1y", relativedelta(years=1, day=366)),
-            ("2y", relativedelta(years=2, day=366)),
+            ("1y", relativedelta(years=1)),
+            ("2y", relativedelta(years=2)),
             ("15d", relativedelta(days=15)),
             ("52w", relativedelta(weeks=52)),
             ("24m", relativedelta(months=24, day=31)),
-            ("100y", relativedelta(years=100, day=366)),
+            ("100y", relativedelta(years=100)),
         ],
     )
     def test_ok(self, step, expected):

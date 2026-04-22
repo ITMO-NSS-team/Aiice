@@ -77,6 +77,6 @@ def convert_step_to_delta(step: int | str | None) -> relativedelta:
             case "m":
                 return relativedelta(months=value, day=31)
             case "y":
-                return relativedelta(years=value, day=366)
+                return relativedelta(years=value)
 
     raise ValueError(f"Invalid step type: {type(step)}")
