@@ -4,6 +4,6 @@ The causal-conv1d and mamba-ssm extensions are compiled for compute capability s
 
 If training fails with a `CUDNN_STATUS_NOT_INITIALIZED` error, comment out the `total_flops = flops.total()` line in `trainer.py` to disable FLOPs estimation. This does not affect training results.
 
-In our experiments, we increased `hid_S` to 32 and `hid_T_channels` to 8 in `config.py`. 
+In our experiments, we increased `hid_S` to 32 and `hid_T_channels` to 24 in `config.py`. 
 
 Sea ice concentration images of Russian Arctic seas were resized to 56x56, and the temporal-spatial patch was set to (1, 2, 2) in the `HilbertScan3DMambaBlock` initialization within `FH_Mamba.py`.
