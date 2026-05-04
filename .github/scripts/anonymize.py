@@ -30,6 +30,32 @@ def should_skip(path: Path) -> bool:
     return any(part in SKIP_PATHS for part in path.parts)
 
 
+ANON_SECTION = """
+---
+
+**Anonymous versions for review:**
+
+| Artifact | Link |
+|---|---|
+| 📦 Repository | [anonymous.4open.science/r/Aiice-0BF8](https://anonymous.4open.science/r/Aiice-0BF8) |
+| 📖 Documentation | [prismatic-baklava-6691d5.netlify.app](https://prismatic-baklava-6691d5.netlify.app) |
+| 🗄️ Dataset | [huggingface.co/datasets/anon-aiice/Aiice](https://huggingface.co/datasets/anon-aiice/Aiice) |
+"""
+
+
+def inject_anon_section(root: str = ".") -> None:
+    readme = Path(root) / "README.md"
+    if not readme.exists():
+        print("  [!] README.md not found, skipping anon section injection")
+        return
+    content = readme.read_text(encoding="utf-8")
+    if "Anonymous versions for review" in content:
+        print("  [~] README.md already has anon section, skipping")
+        return
+    readme.write_text(content + ANON_SECTION, encoding="utf-8")
+    print("  [+] Injected anon section into README.md")
+
+
 def anonymize_file(path: Path) -> int:
     """Replace all sensitive strings in a single file. Returns number of replacements."""
     try:
@@ -67,6 +93,7 @@ def anonymize_repo(root: str = ".") -> None:
             total_replacements += replacements
 
     print(f"\nDone: {total_replacements} replacements across {total_files} files.")
+    inject_anon_section(root) 
 
 
 if __name__ == "__main__":
