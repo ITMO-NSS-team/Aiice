@@ -1,0 +1,29 @@
+output_path: ./outputs
+aiice:
+  sea:
+  - Kara Sea
+  - Barents Sea
+  - Chukchi Sea
+  - Sea of Japan
+  - Laptev Sea
+  start_date: '1980-01-01'
+  end_date: '2020-01-01'
+  pre_history_len: 14
+  forecast_len: 7
+  step: 1
+  batch_size: 16
+run:
+  model_name: fno
+  experiments:
+  - lr: 0.001
+    weight_decay: 1.0e-05
+    max_epoch: 100
+    patience: 10
+    min_delta: 0.0001
+    grad_clip: 1.0
+    bound_weight: 0.1
+    target_modes: 16
+    hidden_channels: 64
+    n_layers: 4
+    val_years: 4
+    seed: 42

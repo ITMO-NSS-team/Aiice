@@ -1,6 +1,6 @@
 import argparse
-import os
 import glob
+import os
 
 import pandas as pd
 import yaml
@@ -109,11 +109,15 @@ def main():
     if args.sea is None:
         # --report is a directory containing subdirs named after seas
         if not os.path.isdir(args.report):
-            print(f"Error: --sea not provided and --report is not a directory: {args.report}")
+            print(
+                f"Error: --sea not provided and --report is not a directory: {args.report}"
+            )
             return
 
         print(f"Processing directory: {args.report}")
-        process_directory(args.report, args.model, args.forecast_len, args.step, args.csv)
+        process_directory(
+            args.report, args.model, args.forecast_len, args.step, args.csv
+        )
 
     else:
         # --sea provided, --report is a single yaml file
@@ -122,7 +126,9 @@ def main():
             return
 
         print(f"Processing single report for: {args.sea}")
-        process_single_report(args.report, args.model, args.sea, args.forecast_len, args.step, args.csv)
+        process_single_report(
+            args.report, args.model, args.sea, args.forecast_len, args.step, args.csv
+        )
 
     print(f"- updated CSV: {args.csv}")
 
