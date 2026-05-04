@@ -9,6 +9,7 @@ import conv3d
 import convlstm
 import fno
 import torch
+import unet
 import yaml
 from torch.utils.data import DataLoader
 
@@ -126,6 +127,18 @@ def main():
                     logger=logger,
                     cfg=cfg,
                     sea=sea,
+            case "unet":
+                train_dataloader = init_train(
+                    cfg.aiice,
+                    device=cfg.device,
+                    sea=sea,
+                )
+
+                unet.run(
+                    logger=logger,
+                    cfg=cfg,
+                    sea=sea,
+                    train_dataloader=train_dataloader,
                 )
             case "baseline_mean":
                 baseline_mean.run(
