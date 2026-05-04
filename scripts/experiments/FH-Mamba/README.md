@@ -6,4 +6,4 @@ If training fails with a `CUDNN_STATUS_NOT_INITIALIZED` error, comment out the `
 
 In our experiments, we increased `hid_S` to 32 and `hid_T_channels` to 24 in `config.py`. 
 
-Sea ice concentration images of Russian Arctic seas were resized to 56x56, and the temporal-spatial patch was set to (1, 2, 2) in the `HilbertScan3DMambaBlock` initialization within `FH_Mamba.py`.
+Sea ice concentration images were resized to 56x56, and the temporal-spatial patch was set to (1, 2, 2) in the `HilbertScan3DMambaBlock` initialization within `FH_Mamba.py`.
