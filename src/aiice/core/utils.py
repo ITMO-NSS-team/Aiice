@@ -5,14 +5,19 @@ from datetime import date
 from pathlib import Path
 
 import httpx
+import requests
 from dateutil.relativedelta import relativedelta
 
 from aiice.constants import DEFAULT_BACKOFF, DEFAULT_RETRIES
 
+# huggingface_hub moved to httpx, but the tree and range endpoints are called
+# through requests, so both families have to be retried
 RETRY_EXCEPTIONS = (
     httpx.RemoteProtocolError,
     httpx.ConnectError,
     httpx.TimeoutException,
+    requests.ConnectionError,
+    requests.Timeout,
 )
 
 

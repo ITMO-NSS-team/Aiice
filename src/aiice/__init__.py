@@ -1,8 +1,8 @@
-from aiice import core, loader, metrics, preprocess
+from aiice import core, loader, metrics, predictors, preprocess
 from aiice.benchmark import AIICE
 
 # visible modules to pdoc
-__all__ = ["AIICE", "core", "loader", "metrics", "preprocess"]
+__all__ = ["AIICE", "core", "loader", "metrics", "predictors", "preprocess"]
 
 from importlib.metadata import PackageNotFoundError, version
 

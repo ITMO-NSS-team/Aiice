@@ -224,6 +224,49 @@ class HfDatasetClient:
             raise RuntimeError(f"Failed to get file {filename}") from e
 
     @retry_on_network_errors(retries=DEFAULT_RETRIES, backoff=DEFAULT_BACKOFF)
+    def read_file_range(self, filename: str, offset: int, length: int) -> bytes | None:
+        """
+        Load a byte range of a dataset file into memory.
+
+        Chunked layouts keep one file per month instead of one per day, which is
+        what keeps the repository under the Hugging Face file-count recommendation.
+        A ranged request costs the same as fetching a whole small file, so reading
+        a single slice out of a chunk is no more expensive than the per-day layout.
+
+        Args:
+            filename (`str`): Relative path to the dataset file.
+            offset (`int`): First byte to read, counted from the start of the file.
+            length (`int`): Number of bytes to read.
+        """
+        if offset < 0 or length <= 0:
+            raise ValueError(f"invalid range: {offset=}, {length=}")
+
+        url = f"{self._api_base_url}/datasets/{self._dataset_repo}/resolve/main/{filename}"
+        headers = dict(self._api_headers)
+        headers["Range"] = f"bytes={offset}-{offset + length - 1}"
+
+        response = requests.get(url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
+
+        # ignore if file isn't found
+        if response.status_code == 404:
+            return None
+
+        response.raise_for_status()
+
+        # a 200 here means the server ignored the range and sent the whole file
+        if response.status_code != 206:
+            raise RuntimeError(
+                f"Range request for {filename} was not honoured: status {response.status_code}"
+            )
+
+        if len(response.content) != length:
+            raise RuntimeError(
+                f"Range request for {filename} returned {len(response.content)} bytes, expected {length}"
+            )
+
+        return response.content
+
+    @retry_on_network_errors(retries=DEFAULT_RETRIES, backoff=DEFAULT_BACKOFF)
     def download_file(self, filename: str, local_dir: str) -> str | None:
         """
         Download a dataset file to a local directory.

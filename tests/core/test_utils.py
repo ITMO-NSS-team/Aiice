@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import httpx
 import pytest
+import requests
 from dateutil.relativedelta import relativedelta
 
 from aiice.core.utils import (
@@ -102,3 +103,44 @@ class Test_convert_step_to_delta:
     def test_error(self, step, expected_error, expected_message):
         with pytest.raises(expected_error, match=expected_message):
             convert_step_to_delta(step)
+
+
+class TestRetryCoverage:
+    """
+    The tree and range endpoints go through requests while huggingface_hub uses
+    httpx, so a retry list covering only one family silently does nothing.
+    """
+
+    @pytest.mark.parametrize(
+        "error",
+        [
+            httpx.ConnectError("down"),
+            httpx.TimeoutException("slow"),
+            requests.ConnectionError("down"),
+            requests.Timeout("slow"),
+        ],
+    )
+    def test_transient_errors_are_retried(self, error):
+        calls = {"n": 0}
+
+        @retry_on_network_errors(retries=3, backoff=0)
+        def flaky():
+            calls["n"] += 1
+            if calls["n"] < 3:
+                raise error
+            return "ok"
+
+        assert flaky() == "ok"
+        assert calls["n"] == 3
+
+    def test_other_errors_are_not_retried(self):
+        calls = {"n": 0}
+
+        @retry_on_network_errors(retries=3, backoff=0)
+        def broken():
+            calls["n"] += 1
+            raise ValueError("not a network problem")
+
+        with pytest.raises(ValueError):
+            broken()
+        assert calls["n"] == 1

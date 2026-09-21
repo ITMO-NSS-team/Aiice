@@ -302,6 +302,64 @@ class TestHfDatasetClient_read_file(BaseTestHfDatasetClient):
                 assert "Network error" in str(err.value)
 
 
+class TestHfDatasetClient_read_file_range(BaseTestHfDatasetClient):
+    @staticmethod
+    def _response(status: int, content: bytes = b""):
+        response = requests.Response()
+        response.status_code = status
+        response._content = content
+        return response
+
+    def test_ok(self, client: HfDatasetClient):
+        payload = b"x" * 64
+        with patch("aiice.core.huggingface.requests.get") as mock_get:
+            mock_get.return_value = self._response(206, payload)
+
+            result = client.read_file_range("chunk.npy", offset=128, length=64)
+
+            assert result == payload
+            called = mock_get.call_args
+            assert called.args[0] == (
+                f"{HF_BASE_URL}/datasets/{HF_DATASET_REPO}/resolve/main/chunk.npy"
+            )
+            # inclusive byte range, so the last byte is offset + length - 1
+            assert called.kwargs["headers"]["Range"] == "bytes=128-191"
+
+    def test_file_not_found(self, client: HfDatasetClient):
+        with patch("aiice.core.huggingface.requests.get") as mock_get:
+            mock_get.return_value = self._response(404)
+            assert client.read_file_range("missing.npy", 0, 10) is None
+
+    def test_range_ignored_by_server_raises(self, client: HfDatasetClient):
+        """A 200 means the whole file came back, which would silently misalign."""
+        with patch("aiice.core.huggingface.requests.get") as mock_get:
+            mock_get.return_value = self._response(200, b"y" * 4096)
+            with pytest.raises(RuntimeError) as err:
+                client.read_file_range("chunk.npy", 128, 64)
+            assert "not honoured" in str(err.value)
+
+    def test_short_read_raises(self, client: HfDatasetClient):
+        with patch("aiice.core.huggingface.requests.get") as mock_get:
+            mock_get.return_value = self._response(206, b"z" * 10)
+            with pytest.raises(RuntimeError) as err:
+                client.read_file_range("chunk.npy", 128, 64)
+            assert "expected 64" in str(err.value)
+
+    @pytest.mark.parametrize("offset, length", [(-1, 10), (0, 0), (0, -5)])
+    def test_invalid_range_raises(self, client: HfDatasetClient, offset, length):
+        with pytest.raises(ValueError) as err:
+            client.read_file_range("chunk.npy", offset, length)
+        assert "invalid range" in str(err.value)
+
+    def test_uses_the_configured_repo(self):
+        client = HfDatasetClient(repo="ITMO-NSS/Aiice-predictors")
+        with patch("aiice.core.huggingface.requests.get") as mock_get:
+            mock_get.return_value = self._response(206, b"q" * 8)
+            client.read_file_range("t2m/2025/t2m_202501.npy", 128, 8)
+
+            assert "Aiice-predictors" in mock_get.call_args.args[0]
+
+
 class TestHfDatasetClient_download_file(BaseTestHfDatasetClient):
     def test_ok(self, client: HfDatasetClient):
         with patch(
