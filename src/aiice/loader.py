@@ -10,7 +10,6 @@ import numpy as np
 import torch
 
 from aiice.constants import (
-    DATASET_SHAPE,
     MASK_SEA_DATA_MAX_VALUE,
     MASK_SEA_DATA_PATH,
     MASK_SEA_IDX_PATH,
@@ -32,10 +31,15 @@ class Loader:
     request timeouts or temporary server-side errors from
     Hugging Face. If this happens, reduce the number of threads
     or split the download into smaller date ranges.
+
+    Args:
+        client (`HfDatasetClient`, optional): Client to read the dataset through.
+            Pass a configured one to read a different repository or layout.
+            Defaults to a client pointing at the published ice dataset.
     """
 
-    def __init__(self):
-        self._hf = HfDatasetClient()
+    def __init__(self, client: HfDatasetClient | None = None):
+        self._hf = client or HfDatasetClient()
 
         sea_csv_reader = csv.DictReader(
             io.StringIO(self._get_raw_file(MASK_SEA_IDX_PATH).decode("utf-8"))
@@ -204,9 +208,10 @@ class Loader:
 
     def _decode_raw_matrix(self, raw: bytes) -> np.ndarray:
         matrix: np.ndarray = np.load(BytesIO(raw))
-        if tuple(matrix.shape) != DATASET_SHAPE:
+        expected = tuple(self._hf.shape)
+        if tuple(matrix.shape) != expected:
             raise ValueError(
-                f"Matrix shape ({matrix.shape}) is not the same as a default one {DATASET_SHAPE=}"
+                f"Matrix shape ({matrix.shape}) is not the same as a default one DATASET_SHAPE={expected}"
             )
         return matrix
 

@@ -1,4 +1,5 @@
 from collections import defaultdict
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from functools import lru_cache
@@ -20,6 +21,7 @@ from aiice.constants import (
     HF_DATASET_REPO,
     HF_PACKAGE_NAME,
     HF_REPO_TYPE,
+    HF_YEAR_PATH,
     KEY_DATASET_END,
     KEY_DATASET_START,
     KEY_FILES,
@@ -41,21 +43,47 @@ from aiice.core.utils import (
 class HfDatasetClient:
     """
     Client for accessing the AIICE Hugging Face dataset.
+
+    The defaults point at the published ice dataset. Every one of them is an
+    argument so the same client can serve a second repository - predictors, for
+    example - without subclassing or patching module constants.
+
+    Args:
+        repo (`str`, optional): Dataset repository id. Defaults to the AIICE ice dataset.
+        repo_type (`str`, optional): Hugging Face repository type. Defaults to "dataset".
+        start (`date`, optional): Earliest date the repository covers. Defaults to the ice dataset start.
+        end (`date`, optional): Latest date the repository covers. Defaults to the ice dataset end.
+        shape (`tuple[int, int]`, optional): Shape of a single matrix. Defaults to (432, 432).
+        filename_template (`Callable[[date], str]`, optional): Maps a date to a path inside
+            the repository. This is what makes the client fetch only the dates asked for,
+            with no directory listing, so a second repository needs its own mapping.
+            Defaults to the ice layout `global_series/<year>/osisaf_<YYYYMMDD>.npy`.
+        year_path (`str`, optional): Template of the per-year folder used by `info()`,
+            formatted with `year`. Defaults to `"global_series/{year}"`.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        repo: str = HF_DATASET_REPO,
+        repo_type: str = HF_REPO_TYPE,
+        start: date = MIN_DATASET_START,
+        end: date = MAX_DATASET_END,
+        shape: tuple[int, int] = DATASET_SHAPE,
+        filename_template: Callable[[date], str] = get_filename_template,
+        year_path: str = HF_YEAR_PATH,
+    ):
         self._api_base_url = HF_BASE_URL
         self._api = HfApi(endpoint=self._api_base_url, library_name=HF_PACKAGE_NAME)
         self._api_headers = build_hf_headers(library_name=HF_PACKAGE_NAME)
 
-        self._dataset_repo = HF_DATASET_REPO
-        self._dataset_repo_type = HF_REPO_TYPE
+        self._dataset_repo = repo
+        self._dataset_repo_type = repo_type
 
-        self._min_dataset_start, self._max_dataset_end = (
-            MIN_DATASET_START,
-            MAX_DATASET_END,
-        )
-        self._shape = DATASET_SHAPE
+        self._min_dataset_start, self._max_dataset_end = start, end
+        self._shape = shape
+
+        self._filename_template = filename_template
+        self._year_path = year_path
 
     @property
     def dataset_start(self) -> date:
@@ -164,7 +192,7 @@ class HfDatasetClient:
         delta = convert_step_to_delta(step=step)
 
         while current <= end:
-            filenames.append(get_filename_template(current))
+            filenames.append(self._filename_template(current))
             current += delta
 
         return filenames
@@ -221,7 +249,8 @@ class HfDatasetClient:
 
     @lru_cache(maxsize=YEAR_STATS_CACHE_SIZE)
     def _fetch_year_stats(self, year: int) -> tuple[int, int, int]:
-        url = f"{self._api_base_url}/api/datasets/{self._dataset_repo}/tree/main/global_series/{year}"
+        year_path = self._year_path.format(year=year)
+        url = f"{self._api_base_url}/api/datasets/{self._dataset_repo}/tree/main/{year_path}"
 
         resp = requests.get(
             url, timeout=DEFAULT_REQUEST_TIMEOUT, headers=self._api_headers

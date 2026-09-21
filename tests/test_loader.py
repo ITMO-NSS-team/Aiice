@@ -11,7 +11,10 @@ from aiice.constants import (
     MASK_SEA_DATA_MAX_VALUE,
     MASK_SEA_DATA_PATH,
     MASK_SEA_IDX_PATH,
+    MAX_DATASET_END,
+    MIN_DATASET_START,
 )
+from aiice.core.huggingface import HfDatasetClient
 from aiice.loader import Loader
 
 
@@ -62,6 +65,60 @@ class BaseTestLoader:
                 ]
             )
             return loader
+
+
+class TestLoader_client_injection:
+    """
+    Loader keeps building its own ice client by default, but a configured one
+    can be handed in so a second repository is reachable from the public API.
+    """
+
+    @staticmethod
+    def _build(client=None) -> Loader:
+        with (
+            patch("aiice.loader.HfDatasetClient.read_file") as mock_read_file,
+            patch("aiice.loader.Loader._decode_raw_matrix") as mock_decode,
+        ):
+            mock_read_file.side_effect = [b"name,id\nBarents Sea,1\n", b"binary"]
+            mock_decode.return_value = make_center_sea_mask(
+                shape=DATASET_SHAPE, sea_id=1, sea_size=(4, 4)
+            )
+            return Loader(client=client) if client else Loader()
+
+    def test_default_client_matches_constants(self):
+        loader = self._build()
+
+        assert loader.dataset_start == MIN_DATASET_START
+        assert loader.dataset_end == MAX_DATASET_END
+        assert loader.shape == DATASET_SHAPE
+
+    def test_injected_client_is_used(self):
+        client = HfDatasetClient(
+            repo="ITMO-NSS/Aiice-predictors",
+            start=date(2000, 1, 1),
+            end=date(2000, 1, 31),
+            shape=(64, 64),
+            filename_template=lambda d: f"t2m/{d.year}/t2m_{d:%Y%m%d}.npy",
+        )
+        loader = self._build(client)
+
+        assert loader.dataset_start == date(2000, 1, 1)
+        assert loader.dataset_end == date(2000, 1, 31)
+        assert loader.shape == (64, 64)
+
+    def test_decode_checks_the_client_shape(self):
+        client = HfDatasetClient(shape=(4, 4))
+        loader = self._build(client)
+
+        buf = BytesIO()
+        np.save(buf, np.zeros((4, 4)))
+        assert loader._decode_raw_matrix(buf.getvalue()).shape == (4, 4)
+
+        wrong = BytesIO()
+        np.save(wrong, np.zeros((8, 8)))
+        with pytest.raises(ValueError) as exc:
+            loader._decode_raw_matrix(wrong.getvalue())
+        assert "is not the same as a default one" in str(exc.value)
 
 
 class TestLoader_download(BaseTestLoader):

@@ -63,6 +63,20 @@ class SlidingWindowDataset(Dataset):
             to the input tensor X. Defaults to False.
         device (`str`, optional): Device on which to place the tensors (e.g., "cpu", "cuda"). Defaults to None.
         dtype (torch.dtype, optional): Data type used to convert the input sequence. Defaults to torch.float32.
+        x_channels (`Sequence[int]`, optional): Indices along axis 1 to keep in the input X.
+            Use it when `data` stacks several variables as channels, shaped `[T, C, ...]`:
+            for example `x_channels=[0, 1, 2]` feeds the model ice plus two predictors.
+            If None, X keeps every channel. Defaults to None.
+        y_channels (`Sequence[int]`, optional): Indices along axis 1 to keep in the target Y.
+            X and Y are sliced from the same tensor, so without this the model is asked to
+            forecast the predictors as well, and the metrics are computed over them.
+            Set it to the target channel only - for example `y_channels=[0]`.
+            If None, Y keeps every channel. Defaults to None.
+
+            Selection happens before `threshold` is applied, so binarization only ever
+            touches the channels that remain. Channels index axis 1, which is meaningful
+            only when the data is shaped `[T, C, ...]`; for plain `[T, H, W]` data axis 1
+            is the height, and selecting channels there is not what you want.
     """
 
     def __init__(
@@ -75,6 +89,8 @@ class SlidingWindowDataset(Dataset):
         x_binarize: bool = False,
         device: str | None = None,
         dtype: torch.dtype = torch.float32,
+        x_channels: Sequence[int] | None = None,
+        y_channels: Sequence[int] | None = None,
     ):
         self._data = torch.as_tensor(data, dtype=dtype, device=device)
         self._indices = idx
@@ -84,6 +100,9 @@ class SlidingWindowDataset(Dataset):
 
         if self._data.ndim == 1:
             self._data = self._data.unsqueeze(-1)  # [T] -> [T, 1]
+
+        self._x_channels = self._validate_channels(x_channels, "x_channels")
+        self._y_channels = self._validate_channels(y_channels, "y_channels")
 
         self._pre_history_len = pre_history_len
         self._forecast_len = forecast_len
@@ -100,6 +119,25 @@ class SlidingWindowDataset(Dataset):
             raise ValueError(
                 f"Not enough data: got {self._T}, need at least {pre_history_len + forecast_len}"
             )
+
+    def _validate_channels(
+        self, channels: Sequence[int] | None, name: str
+    ) -> list[int] | None:
+        if channels is None:
+            return None
+
+        channels = list(channels)
+        if not channels:
+            raise ValueError(f"{name} must not be empty")
+
+        available = self._data.shape[1]
+        out_of_range = [c for c in channels if not -available <= c < available]
+        if out_of_range:
+            raise ValueError(
+                f"{name} {out_of_range} out of range: data has {available} channels along axis 1"
+            )
+
+        return channels
 
     def __len__(self):
         return self._length
@@ -118,6 +156,13 @@ class SlidingWindowDataset(Dataset):
             + self._pre_history_len
             + self._forecast_len
         ]
+
+        # X and Y come from the same tensor, so without this the predictors
+        # stacked into the data end up in the target as well
+        if self._x_channels is not None:
+            x = x[:, self._x_channels]
+        if self._y_channels is not None:
+            y = y[:, self._y_channels]
 
         if isinstance(self._threshold, float):
             y = apply_threshold(y, self._threshold)

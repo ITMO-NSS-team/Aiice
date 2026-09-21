@@ -210,6 +210,121 @@ class TestSlidingWindowDataset:
             )
 
 
+class TestSlidingWindowDatasetChannels:
+    """
+    Data shaped [T, C, H, W]: channel 0 is the target, 1 and 2 are predictors.
+    """
+
+    @pytest.fixture
+    def data(self):
+        # T=5, C=3, H=2, W=2; value encodes (time, channel) as t*10 + c
+        return torch.stack(
+            [
+                torch.stack([torch.full((2, 2), float(t * 10 + c)) for c in range(3)])
+                for t in range(5)
+            ]
+        )
+
+    def test_default_keeps_every_channel(self, data):
+        dataset = SlidingWindowDataset(data=data, pre_history_len=2, forecast_len=2)
+        x0, y0 = dataset[0]
+
+        assert x0.shape == (2, 3, 2, 2)
+        assert y0.shape == (2, 3, 2, 2)
+
+    def test_y_channels_narrows_target_only(self, data):
+        dataset = SlidingWindowDataset(
+            data=data,
+            pre_history_len=2,
+            forecast_len=2,
+            y_channels=[0],
+        )
+        x0, y0 = dataset[0]
+
+        assert x0.shape == (2, 3, 2, 2)  # model still sees every predictor
+        assert y0.shape == (2, 1, 2, 2)  # but forecasts the target only
+
+        # y[0] is t=2, channel 0 => 20
+        np.testing.assert_array_equal(y0[0, 0].numpy(), np.full((2, 2), 20.0))
+
+    def test_x_and_y_channels(self, data):
+        dataset = SlidingWindowDataset(
+            data=data,
+            pre_history_len=2,
+            forecast_len=1,
+            x_channels=[0, 2],
+            y_channels=[0],
+        )
+        x0, y0 = dataset[0]
+
+        assert x0.shape == (2, 2, 2, 2)
+        assert y0.shape == (1, 1, 2, 2)
+
+        # x[0] is t=0 => channels 0 and 2 hold 0 and 2
+        np.testing.assert_array_equal(x0[0, 0].numpy(), np.full((2, 2), 0.0))
+        np.testing.assert_array_equal(x0[0, 1].numpy(), np.full((2, 2), 2.0))
+
+    def test_negative_channel_index(self, data):
+        dataset = SlidingWindowDataset(
+            data=data, pre_history_len=2, forecast_len=1, y_channels=[-1]
+        )
+        _, y0 = dataset[0]
+
+        assert y0.shape == (1, 1, 2, 2)
+        # last channel of t=2 => 22
+        np.testing.assert_array_equal(y0[0, 0].numpy(), np.full((2, 2), 22.0))
+
+    def test_threshold_applies_after_selection(self, data):
+        dataset = SlidingWindowDataset(
+            data=data,
+            pre_history_len=2,
+            forecast_len=1,
+            y_channels=[0],
+            threshold=15.0,
+        )
+        _, y0 = dataset[0]
+
+        # only the kept channel is binarized: t=2 channel 0 is 20 > 15
+        assert y0.shape == (1, 1, 2, 2)
+        np.testing.assert_array_equal(y0[0, 0].numpy(), np.ones((2, 2)))
+
+    def test_channels_with_idx(self, data):
+        dataset = SlidingWindowDataset(
+            data=data,
+            pre_history_len=2,
+            forecast_len=1,
+            idx=["a", "b", "c", "d", "e"],
+            y_channels=[0],
+        )
+        idx_slice, x0, y0 = dataset[0]
+
+        assert idx_slice == ["a", "b", "c"]
+        assert x0.shape == (2, 3, 2, 2)
+        assert y0.shape == (1, 1, 2, 2)
+
+    @pytest.mark.parametrize("channels", [[3], [-4], [0, 7]])
+    def test_channel_out_of_range_raises(self, data, channels):
+        with pytest.raises(ValueError) as exc:
+            SlidingWindowDataset(
+                data=data,
+                pre_history_len=2,
+                forecast_len=1,
+                y_channels=channels,
+            )
+        assert "out of range" in str(exc.value)
+
+    @pytest.mark.parametrize("name", ["x_channels", "y_channels"])
+    def test_empty_channels_raises(self, data, name):
+        with pytest.raises(ValueError) as exc:
+            SlidingWindowDataset(
+                data=data,
+                pre_history_len=2,
+                forecast_len=1,
+                **{name: []},
+            )
+        assert f"{name} must not be empty" in str(exc.value)
+
+
 class TestApply:
     @pytest.mark.parametrize(
         "tensor, threshold, expected",

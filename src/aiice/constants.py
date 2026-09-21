@@ -7,6 +7,9 @@ HF_REPO_TYPE: str = "dataset"
 HF_DATASET_REPO: str = "ITMO-NSS/Aiice"
 HF_PACKAGE_NAME: str = "aiice"
 
+# folder holding one subfolder per year, used to collect size statistics
+HF_YEAR_PATH: str = "global_series/{year}"
+
 # dataset constants
 
 MIN_DATASET_START: date = date(1980, 1, 1)

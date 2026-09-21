@@ -8,6 +8,7 @@ from huggingface_hub.errors import RemoteEntryNotFoundError
 
 from aiice.constants import (
     BYTES_IN_MB,
+    DATASET_SHAPE,
     HF_BASE_URL,
     HF_DATASET_REPO,
     HF_REPO_TYPE,
@@ -15,6 +16,8 @@ from aiice.constants import (
     KEY_PER_YEAR,
     KEY_SIZE_BYTES,
     KEY_SIZE_MB,
+    MAX_DATASET_END,
+    MIN_DATASET_START,
 )
 from aiice.core.huggingface import HfDatasetClient
 from aiice.core.utils import get_filename_template
@@ -24,6 +27,119 @@ class BaseTestHfDatasetClient:
     @pytest.fixture
     def client(self) -> HfDatasetClient:
         return HfDatasetClient()
+
+
+class TestHfDatasetClient_configuration:
+    """
+    The defaults describe the ice dataset; every one of them is overridable so a
+    second repository can be read through the same client.
+    """
+
+    def test_defaults_match_constants(self):
+        client = HfDatasetClient()
+
+        assert client.dataset_start == MIN_DATASET_START
+        assert client.dataset_end == MAX_DATASET_END
+        assert client.shape == DATASET_SHAPE
+        assert client.get_filenames(start=date(2020, 1, 1), end=date(2020, 1, 1)) == [
+            get_filename_template(date(2020, 1, 1))
+        ]
+
+    def test_custom_repo_is_used_by_read_file(self):
+        client = HfDatasetClient(repo="ITMO-NSS/Aiice-predictors")
+
+        with patch("aiice.core.huggingface.http_get") as mock_http_get:
+            mock_http_get.side_effect = (
+                lambda url, temp_file, **kwargs: temp_file.write(b"x")
+            )
+            client.read_file("t2m/2020/t2m_20200101.npy")
+
+            mock_http_get.assert_called_once_with(
+                url=(
+                    f"{HF_BASE_URL}/datasets/ITMO-NSS/Aiice-predictors"
+                    "/resolve/main/t2m/2020/t2m_20200101.npy"
+                ),
+                temp_file=ANY,
+                displayed_filename="t2m/2020/t2m_20200101.npy",
+                headers=ANY,
+            )
+
+    def test_custom_repo_is_used_by_download_file(self):
+        client = HfDatasetClient(repo="ITMO-NSS/Aiice-predictors")
+
+        with patch(
+            "aiice.core.huggingface.HfApi.hf_hub_download"
+        ) as mock_hf_hub_download:
+            mock_hf_hub_download.return_value = "/tmp/x.npy"
+            client.download_file("x.npy", "/tmp")
+
+            mock_hf_hub_download.assert_called_once_with(
+                repo_id="ITMO-NSS/Aiice-predictors",
+                repo_type=HF_REPO_TYPE,
+                filename="x.npy",
+                local_dir="/tmp",
+            )
+
+    def test_custom_filename_template(self):
+        client = HfDatasetClient(
+            start=date(2020, 1, 1),
+            end=date(2020, 1, 3),
+            filename_template=lambda d: f"t2m/{d.year}/t2m_{d:%Y%m%d}.npy",
+        )
+
+        assert client.get_filenames() == [
+            "t2m/2020/t2m_20200101.npy",
+            "t2m/2020/t2m_20200102.npy",
+            "t2m/2020/t2m_20200103.npy",
+        ]
+
+    def test_custom_date_bounds_are_enforced(self):
+        client = HfDatasetClient(start=date(2000, 1, 1), end=date(2000, 12, 31))
+
+        assert client.dataset_start == date(2000, 1, 1)
+        assert client.dataset_end == date(2000, 12, 31)
+
+        with pytest.raises(ValueError):
+            client.get_filenames(start=date(1999, 12, 31))
+
+        with pytest.raises(ValueError):
+            client.get_filenames(end=date(2001, 1, 1))
+
+    def test_custom_shape(self):
+        client = HfDatasetClient(shape=(64, 64))
+        assert client.shape == (64, 64)
+
+    def test_custom_year_path_used_by_stats(self):
+        client = HfDatasetClient(
+            start=date(2020, 1, 1),
+            end=date(2020, 12, 31),
+            year_path="t2m/{year}",
+        )
+
+        with patch("aiice.core.huggingface.requests.get") as mock_get:
+            mock_get.return_value.json.return_value = [
+                {"type": "file", "size": 10},
+                {"type": "directory", "size": 999},
+            ]
+            mock_get.return_value.raise_for_status = lambda: None
+
+            year, files, size = client._fetch_year_stats(2020)
+
+            assert (year, files, size) == (2020, 1, 10)
+            called_url = mock_get.call_args.args[0]
+            assert called_url.endswith("/tree/main/t2m/2020")
+
+    def test_two_clients_do_not_share_state(self):
+        ice = HfDatasetClient()
+        other = HfDatasetClient(
+            repo="ITMO-NSS/Aiice-predictors",
+            start=date(2000, 1, 1),
+            end=date(2000, 1, 2),
+        )
+
+        assert ice.dataset_start == MIN_DATASET_START
+        assert other.dataset_start == date(2000, 1, 1)
+        assert len(other.get_filenames()) == 2
 
 
 class TestHfDatasetClient_get_filenames(BaseTestHfDatasetClient):
